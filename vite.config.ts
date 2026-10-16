@@ -6,6 +6,14 @@ import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig({
   base: process.env.VITE_BASE_PATH || (process.env.GITHUB_ACTIONS ? "/GDG-HUST-Website-20-10-26/" : "/"),
+  define: {
+    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
+      process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || process.env.URL || ""
+    ),
+    "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(
+      process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.KEY || process.env.ANON_KEY || ""
+    ),
+  },
   plugins: [
     tanstackRouter({
       target: "react",

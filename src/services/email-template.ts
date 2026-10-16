@@ -49,7 +49,7 @@ export function generateGirlInvitationEmail(
       </div>
 
       <a href="${actionUrl}" class="btn" target="_blank">
-        🌸 Bắt Đầu Chơi Minigame Ngay
+        Bắt Đầu Chơi Minigame Ngay
       </a>
 
       <p class="token-text">

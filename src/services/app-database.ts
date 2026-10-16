@@ -78,7 +78,7 @@ const TEST_QUESTIONS_FIXTURE: Question[] = [
     question_type: "multiple_choice",
     text: "Ngày Phụ nữ Việt Nam 20/10 tôn vinh ai?",
     options: [
-      { key: "a", label: "Những người phụ nữ Việt Nam tuyệt vời" },
+      { key: "a", label: "Phụ nữ Việt Nam" },
       { key: "b", label: "Phương án khác" },
     ],
     correct_key: "a",
@@ -627,6 +627,50 @@ export class AppDatabaseService {
     return { success: true, boy: { ...boy } };
   }
 
+  public async submitBoyWishAsync(
+    accessCode: string,
+    rawName: string,
+    secretCode: string,
+    wish: string,
+    ornamentType?: OrnamentType,
+    assignedGirlName?: string,
+    giftHint?: string
+  ): Promise<{ success: boolean; boy?: Boy; message?: string }> {
+    const res = this.submitBoyWish(
+      accessCode,
+      rawName,
+      secretCode,
+      wish,
+      ornamentType,
+      assignedGirlName,
+      giftHint
+    );
+    if (!res.success || !res.boy) return res;
+
+    if (this.isUsingSupabase()) {
+      try {
+        const group = this.state.groups[0] || DEFAULT_GROUPS[0];
+        await supabase.insert<Group>("groups", group);
+        await supabase.insert<Boy>("boys", res.boy);
+        if (res.boy.secret_code) {
+          await supabase.client.from("gifts").upsert({
+            id: res.boy.id,
+            code: res.boy.secret_code.trim().toUpperCase(),
+            recipient_name: res.boy.assigned_girl_name || "",
+            sender_name: res.boy.name,
+            message: res.boy.personal_wish || "",
+            gift_content: res.boy.gift_hint || "",
+            ornament_type: res.boy.ornament_type || "lotus",
+          });
+        }
+      } catch (err) {
+        console.warn("[Supabase] submitBoyWishAsync error:", err);
+      }
+    }
+
+    return res;
+  }
+
   public verifySecretCode(
     code: string,
     girlToken?: string
@@ -805,7 +849,7 @@ export class AppDatabaseService {
     }
 
     const groupBoys = activeGroup
-      ? this.state.boys.filter((b) => b.group_id === activeGroup.id)
+      ? this.state.boys.filter((b) => !b.group_id || b.group_id === activeGroup.id)
       : this.state.boys;
 
     const unlockedCodes = new Set<string>([

@@ -1,28 +1,62 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-function getEnvValue(key: string): string {
-  if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env[key]) {
-    return String(import.meta.env[key]).trim();
-  }
-  if (typeof process !== "undefined" && process.env && process.env[key]) {
-    return String(process.env[key]).trim();
-  }
-  if (typeof localStorage !== "undefined") {
-    return (localStorage.getItem(key) || "").trim();
+function getQueryParam(param: string): string {
+  if (typeof window !== "undefined" && window.location) {
+    try {
+      const val = new URLSearchParams(window.location.search).get(param);
+      if (val) return val.trim();
+    } catch {
+      // ignore
+    }
   }
   return "";
 }
 
+function getStored(key: string): string {
+  if (typeof localStorage !== "undefined") {
+    try {
+      return (localStorage.getItem(key) || "").trim();
+    } catch {
+      // ignore
+    }
+  }
+  return "";
+}
+
+// 1. Static Vite compile-time replacements (MUST use static property access)
+const staticViteUrl =
+  typeof import.meta !== "undefined" && import.meta.env
+    ? import.meta.env.VITE_SUPABASE_URL
+    : "";
+
+const staticViteKey =
+  typeof import.meta !== "undefined" && import.meta.env
+    ? import.meta.env.VITE_SUPABASE_ANON_KEY
+    : "";
+
+// 2. Query param overrides (useful for testing or fallback links)
+const queryUrl = getQueryParam("supabase_url");
+const queryKey = getQueryParam("supabase_key") || getQueryParam("supabase_anon_key") || getQueryParam("key");
+
+if (typeof localStorage !== "undefined") {
+  if (queryUrl) localStorage.setItem("VITE_SUPABASE_URL", queryUrl);
+  if (queryKey) localStorage.setItem("VITE_SUPABASE_ANON_KEY", queryKey);
+}
+
 export const supabaseUrl =
-  getEnvValue("VITE_SUPABASE_URL") ||
-  getEnvValue("NEXT_PUBLIC_SUPABASE_URL") ||
-  getEnvValue("SUPABASE_URL");
+  (queryUrl ? queryUrl : "") ||
+  (staticViteUrl ? String(staticViteUrl).trim() : "") ||
+  getStored("VITE_SUPABASE_URL") ||
+  getStored("SUPABASE_URL") ||
+  "";
 
 export const supabaseAnonKey =
-  getEnvValue("VITE_SUPABASE_ANON_KEY") ||
-  getEnvValue("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY") ||
-  getEnvValue("SUPABASE_ANON_KEY") ||
-  getEnvValue("KEY");
+  (queryKey ? queryKey : "") ||
+  (staticViteKey ? String(staticViteKey).trim() : "") ||
+  getStored("VITE_SUPABASE_ANON_KEY") ||
+  getStored("SUPABASE_ANON_KEY") ||
+  getStored("KEY") ||
+  "";
 
 // Ensure URL has http(s) prefix if provided
 const validUrl =
@@ -52,4 +86,15 @@ export function isSupabaseConfigured(): boolean {
       supabaseUrl.startsWith("http") &&
       !supabaseUrl.includes("placeholder-project")
   );
+}
+
+if (typeof window !== "undefined") {
+  if (isSupabaseConfigured()) {
+    console.log("[Supabase] Connected to:", validUrl);
+  } else {
+    console.warn(
+      "[Supabase] Not configured or missing credentials. Running in local fallback mode. URL:",
+      supabaseUrl ? "(provided)" : "(empty)"
+    );
+  }
 }

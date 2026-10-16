@@ -160,7 +160,7 @@ export function GirlAccountModal({
                 <input
                   type="text"
                   required
-                  placeholder="VD: lanchi_2010, thuha_2010..."
+                  placeholder="Nhập mã tham gia cá nhân..."
                   value={existingToken}
                   onChange={(e) => setExistingToken(e.target.value.trim())}
                   className="w-full h-11 px-3.5 rounded-xl border border-pink-200 bg-white font-mono text-xs text-slate-800 focus:outline-none focus:border-pink-500 shadow-sm"

@@ -171,7 +171,7 @@ export function QuizPlay({
           </h1>
 
           <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-            Bạn đã xuất sắc vượt qua tất cả các câu hỏi của minigame! Giờ đây bạn có thể mở các món quà trên cây ước nguyện.
+            Bạn đã hoàn thành minigame! Hãy dùng manh mối bên dưới để tìm bạn nam và nhận mã mở quà.
           </p>
 
           <div className="mt-5 p-4 rounded-2xl bg-pink-50/70 border border-pink-100 text-left space-y-2">
@@ -349,7 +349,7 @@ export function QuizPlay({
 
         {feedback === "correct" && (
           <div className="mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
-            <span>Chính xác rồi! Tuyệt vời quá!</span>
+            <span>Chính xác!</span>
           </div>
         )}
       </div>

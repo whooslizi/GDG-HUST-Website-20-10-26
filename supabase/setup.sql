@@ -82,47 +82,41 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- 7. Enable Row Level Security (RLS) on all tables
+-- 7. Grant standard access to public roles
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT ALL ON TABLE groups TO anon, authenticated;
+GRANT ALL ON TABLE boys TO anon, authenticated;
+GRANT ALL ON TABLE girls TO anon, authenticated;
+GRANT ALL ON TABLE questions TO anon, authenticated;
+GRANT ALL ON TABLE gifts TO anon, authenticated;
+
+-- 8. Enable Row Level Security (RLS) on all tables
 ALTER TABLE groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE boys ENABLE ROW LEVEL SECURITY;
 ALTER TABLE girls ENABLE ROW LEVEL SECURITY;
 ALTER TABLE questions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gifts ENABLE ROW LEVEL SECURITY;
 
--- 8. Policies for collaborative public event
-DO $$
-BEGIN
-  -- groups
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'groups' AND policyname = 'Public Read/Write groups') THEN
-    CREATE POLICY "Public Read/Write groups" ON groups FOR ALL TO anon USING (true) WITH CHECK (true);
-  END IF;
+-- 9. Cleanly recreate policies for collaborative public event
+DROP POLICY IF EXISTS "Public Read/Write groups" ON groups;
+CREATE POLICY "Public Read/Write groups" ON groups FOR ALL TO public USING (true) WITH CHECK (true);
 
-  -- boys
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'boys' AND policyname = 'Public Read/Write boys') THEN
-    CREATE POLICY "Public Read/Write boys" ON boys FOR ALL TO anon USING (true) WITH CHECK (true);
-  END IF;
+DROP POLICY IF EXISTS "Public Read/Write boys" ON boys;
+CREATE POLICY "Public Read/Write boys" ON boys FOR ALL TO public USING (true) WITH CHECK (true);
 
-  -- girls
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'girls' AND policyname = 'Public Read/Write girls') THEN
-    CREATE POLICY "Public Read/Write girls" ON girls FOR ALL TO anon USING (true) WITH CHECK (true);
-  END IF;
+DROP POLICY IF EXISTS "Public Read/Write girls" ON girls;
+CREATE POLICY "Public Read/Write girls" ON girls FOR ALL TO public USING (true) WITH CHECK (true);
 
-  -- questions
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'questions' AND policyname = 'Public Read/Write questions') THEN
-    CREATE POLICY "Public Read/Write questions" ON questions FOR ALL TO anon USING (true) WITH CHECK (true);
-  END IF;
+DROP POLICY IF EXISTS "Public Read/Write questions" ON questions;
+CREATE POLICY "Public Read/Write questions" ON questions FOR ALL TO public USING (true) WITH CHECK (true);
 
-  -- gifts (Allow anon to insert or update their gift, but NO public SELECT policy to prevent reading all gifts)
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'gifts' AND policyname = 'Public Insert gifts') THEN
-    CREATE POLICY "Public Insert gifts" ON gifts FOR INSERT TO anon WITH CHECK (true);
-  END IF;
+DROP POLICY IF EXISTS "Public Insert gifts" ON gifts;
+CREATE POLICY "Public Insert gifts" ON gifts FOR INSERT TO public WITH CHECK (true);
 
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'gifts' AND policyname = 'Public Update gifts') THEN
-    CREATE POLICY "Public Update gifts" ON gifts FOR UPDATE TO anon USING (true) WITH CHECK (true);
-  END IF;
-END $$;
+DROP POLICY IF EXISTS "Public Update gifts" ON gifts;
+CREATE POLICY "Public Update gifts" ON gifts FOR UPDATE TO public USING (true) WITH CHECK (true);
 
--- 9. RPC Function: get_gift(p_code) - Secure lookup by secret code only
+-- 10. RPC Function: get_gift(p_code) - Secure lookup by secret code only
 CREATE OR REPLACE FUNCTION get_gift(p_code TEXT)
 RETURNS SETOF gifts
 LANGUAGE sql
@@ -134,12 +128,23 @@ $$;
 
 GRANT EXECUTE ON FUNCTION get_gift(TEXT) TO anon, authenticated;
 
--- 10. Enable Supabase Realtime publication for live tree updates
+-- 11. Enable Supabase Realtime publication for live tree updates
 DO $$
 BEGIN
   BEGIN
-    ALTER PUBLICATION supabase_realtime ADD TABLE groups, boys, girls, questions;
-  EXCEPTION WHEN OTHERS THEN
-    NULL;
+    ALTER PUBLICATION supabase_realtime ADD TABLE groups;
+  EXCEPTION WHEN OTHERS THEN NULL;
+  END;
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE boys;
+  EXCEPTION WHEN OTHERS THEN NULL;
+  END;
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE girls;
+  EXCEPTION WHEN OTHERS THEN NULL;
+  END;
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE questions;
+  EXCEPTION WHEN OTHERS THEN NULL;
   END;
 END $$;

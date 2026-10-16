@@ -156,7 +156,7 @@ export function WishGarden({ customDb }: { customDb?: AppDatabaseService }) {
               </button>
             </div>
             <p className="text-[11px] text-slate-500 italic">
-              Lưu ý: Hãy giữ mã bí mật này để gửi cho bạn nữ khi gặp ngoài đời nhận quà.
+              Gửi mã này cho bạn nữ để mở thư trên cây.
             </p>
           </div>
         </div>
@@ -167,7 +167,7 @@ export function WishGarden({ customDb }: { customDb?: AppDatabaseService }) {
             onClick={() => setIsBoyLoginModalOpen(true)}
             className="px-4 py-2 rounded-full bg-white/95 hover:bg-white text-[#D84D74] font-bold text-xs border border-pink-200 shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95"
           >
-            <span>Dành Cho Bạn Nam: Treo Lời Chúc & Tạo Mã</span>
+            <span>Gửi lời chúc & mã</span>
           </button>
         </div>
       )}

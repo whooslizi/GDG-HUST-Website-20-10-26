@@ -121,7 +121,7 @@ export function BoyWishPage() {
     const cleanSecret = secretCode.trim().toUpperCase();
 
     try {
-      const res = dbService.submitBoyWish(
+      const res = await dbService.submitBoyWishAsync(
         "GDGOC2010",
         boyName.trim(),
         cleanSecret,
@@ -231,14 +231,7 @@ export function BoyWishPage() {
             Cây Ước Nguyện & Lời Chúc 20/10
           </h1>
           <p className="text-xs text-[#826A73]">
-            {dbService.isUsingSupabase() ? (
-              <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
-                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                Đồng bộ trực tiếp qua Supabase ({totalWishes} món quà trên cây)
-              </span>
-            ) : (
-              <span>Đang có {totalWishes} món quà & lời chúc trên cây</span>
-            )}
+            {totalWishes > 0 ? `${totalWishes} món quà và lời chúc trên cây` : "Chưa có lời chúc nào trên cây"}
           </p>
         </div>
 
@@ -292,7 +285,7 @@ export function BoyWishPage() {
                   Thẻ Xác Nhận Mã Bí Mật
                 </h2>
                 <p className="text-xs text-[#826A73] max-w-md mx-auto leading-relaxed">
-                  Lưu hoặc chụp lại màn hình thẻ này để gửi cho bạn nữ mở quà trên Cây Ước Nguyện.
+                  Gửi mã này cho bạn nữ để mở thư trên cây.
                 </p>
 
                 {/* Printable / Screenshot Voucher */}
@@ -382,7 +375,7 @@ export function BoyWishPage() {
                     <span>Treo Lời Chúc & Tạo Mã Bí Mật</span>
                   </h2>
                   <p className="text-xs text-[#826A73] mt-1">
-                    Điền thông tin và lời chúc của bạn. Món quà sẽ được treo ngay lập tức lên Cây Ước Nguyện để bạn nữ mở.
+                    Điền thông tin và lời chúc gửi tặng các bạn nữ.
                   </p>
                 </div>
 

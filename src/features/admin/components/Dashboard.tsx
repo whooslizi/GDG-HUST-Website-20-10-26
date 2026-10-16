@@ -236,7 +236,7 @@ export function Dashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div>
             <span className="text-[11px] font-bold text-pink-400 uppercase tracking-wider">
-              Hệ Thống Sự Kiện 20/10 · GDGoC HUST
+              Sự Kiện 20/10 · GDGoC HUST
             </span>
             <h1 className="text-2xl sm:text-3xl font-bold text-white mt-1">
               Bảng Điều Phối & Quản Trị
@@ -255,7 +255,7 @@ export function Dashboard() {
               }`}
             >
               <span className={`size-2 rounded-full inline-block ${supabase.isConfigured() ? "bg-emerald-400" : "bg-slate-400"}`} />
-              <span>{supabase.isConfigured() ? "Supabase: Đã Kết Nối (Realtime)" : "Supabase: Chế độ Local"}</span>
+              <span>{supabase.isConfigured() ? "Supabase: Đã kết nối" : "Chế độ lưu cục bộ (Local)"}</span>
             </div>
             <button
               type="button"
@@ -319,7 +319,7 @@ export function Dashboard() {
                 <input
                   type="text"
                   required
-                  placeholder="VD: Nhóm Sen Hồng HUST"
+                  placeholder="VD: Nhóm Sen Hồng"
                   value={groupName}
                   onChange={(e) => setGroupName(e.target.value)}
                   className="w-full h-10 px-3.5 rounded-xl bg-white/10 border border-white/20 text-xs text-white focus:outline-none focus:border-pink-400"
@@ -559,7 +559,7 @@ export function Dashboard() {
                 <input
                   type="email"
                   required
-                  placeholder="lanchi@sis.hust.edu.vn"
+                  placeholder="email@hust.edu.vn"
                   value={girlEmail}
                   onChange={(e) => setGirlEmail(e.target.value)}
                   className="w-full h-10 px-3.5 rounded-xl bg-white/10 border border-white/20 text-xs text-white focus:outline-none"
@@ -647,7 +647,7 @@ export function Dashboard() {
               </div>
               <div>
                 <label className="block text-[11px] font-semibold text-white/70 uppercase tracking-wider mb-1">
-                  Định dạng câu hỏi (Theo kịch bản BTC)
+                  Loại câu hỏi
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -663,13 +663,13 @@ export function Dashboard() {
                         : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"
                     }`}
                   >
-                    1 trong 4 (4 đáp án)
+                    Trắc nghiệm (4 đáp án)
                   </button>
                   <button
                     type="button"
                     onClick={() => {
                       setQType("boolean");
-                      setOptA("Đúng (Chính xác)");
+                      setOptA("Đúng");
                       setOptB("Sai");
                     }}
                     className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
@@ -678,7 +678,7 @@ export function Dashboard() {
                         : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"
                     }`}
                   >
-                    Đúng / Sai (2 đáp án)
+                    Đúng / Sai
                   </button>
                 </div>
               </div>
@@ -700,7 +700,7 @@ export function Dashboard() {
               {qType === "boolean" ? (
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-emerald-300">
-                    A. Đúng (Chính xác)
+                    A. Đúng
                   </div>
                   <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-rose-300">
                     B. Sai
