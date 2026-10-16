@@ -1,4 +1,7 @@
-﻿# GDG-HUST-Website-20-10-26
+# GDG-HUST-Website-20-10-26
+
+girls plz keep your eyes away
+
 ```mermaid
 flowchart TD
     %% 1. BAN TỔ CHỨC Ở TRÊN CÙNG
@@ -50,4 +53,56 @@ flowchart TD
 
     C6 --> D1
     B4 -.->|Nam đọc mã cho Nữ| D2
+```
+
+## Architecture & Files
+
+- `src/routes/`
+  - `__root.tsx`: Root layout, header, and global providers.
+  - `index.tsx`: Main page with the interactive wish tree.
+  - `boy.tsx`: Boy portal to write wishes and generate secret codes.
+  - `play.tsx`: Girl quiz minigame page.
+  - `dashboard.tsx`: Organizer dashboard for rosters, quiz configs, and email previews.
+- `src/features/`
+  - `wish-garden/ViralTree2010.tsx`: SVG wish tree renderer and animations.
+  - `wish-garden/WishGarden.tsx`: Wish garden controller and token handler.
+  - `wish-garden/BoyWishPage.tsx`: Wish writing view.
+  - `wish-garden/BoyWishComposerModal.tsx`: Wish creation modal.
+  - `wish-garden/SecretCodeModal.tsx`: Secret code input modal.
+  - `wish-garden/WishLetterRevealModal.tsx`: Unlocked letter viewer modal.
+  - `quiz/QuizPlay.tsx`: Minigame logic and question transitions.
+  - `admin/Dashboard.tsx`: Admin management panel.
+- `src/services/`
+  - `app-database.ts`: Database client (Supabase sync with localStorage fallback).
+  - `email-template.ts`: Email generator and CSV/JSON roster exports.
+  - `supabase.ts`: Supabase client initialization.
+- `supabase/`
+  - `setup.sql`: Database schema, tables, public RLS policies, and replication setup.
+- `.github/workflows/deploy.yml`: GitHub Actions build and Pages deployment workflow.
+- `vite.config.ts`: Vite build config and static environment variable bindings.
+
+## Build from GitHub Pages (Supabase)
+
+1. Run `supabase/setup.sql` in your Supabase project SQL Editor.
+2. In GitHub repo **Settings > Secrets and variables > Actions**, add:
+   - `VITE_SUPABASE_URL`: Your Supabase URL
+   - `VITE_SUPABASE_ANON_KEY`: Your Supabase anon key
+3. Push to `main` to trigger automatic build and deploy.
+
+## Build Locally (npm)
+
+```bash
+# Install dependencies
+npm install --legacy-peer-deps
+
+# Start dev server
+npm run dev
+
+# Run tests, typecheck, lint
+npm test
+npm run typecheck
+npm run lint
+
+# Build for production
+npm run build
 ```
