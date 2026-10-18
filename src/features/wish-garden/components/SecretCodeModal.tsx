@@ -106,7 +106,7 @@ export function SecretCodeModal({
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-11 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 hover:opacity-95 font-semibold text-sm shadow-lg shadow-pink-500/30 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full h-11 rounded-xl bg-[#D94B76] hover:bg-[#C23D66] font-semibold text-sm shadow-sm transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? "Đang Kiểm Tra..." : "Mở Khóa Toàn Bộ Quà"}
             </button>

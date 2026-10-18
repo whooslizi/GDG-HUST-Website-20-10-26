@@ -220,7 +220,7 @@ export function BoyWishComposerModal({
                 <button
                   type="button"
                   onClick={handleCloseAll}
-                  className="w-full sm:w-1/2 h-11 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:opacity-95 text-white font-bold text-xs shadow-lg shadow-pink-500/25 transition-all cursor-pointer"
+                  className="w-full sm:w-1/2 h-11 rounded-2xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
                 >
                   Hoàn Tất & Xem Cây
                 </button>
@@ -336,7 +336,7 @@ export function BoyWishComposerModal({
                         onClick={() => setOrnamentType(item.type)}
                         className={`h-11 rounded-xl text-[11px] font-medium border flex flex-col items-center justify-center transition-all cursor-pointer ${
                           ornamentType === item.type
-                            ? "bg-pink-500 border-pink-300 text-white font-bold shadow-md shadow-pink-500/30 scale-105"
+                            ? "bg-pink-500 border-pink-300 text-white font-bold shadow-sm scale-105"
                             : "bg-white/5 border-white/15 text-white/70 hover:bg-white/10"
                         }`}
                       >
@@ -364,7 +364,7 @@ export function BoyWishComposerModal({
                 <div className="pt-2">
                   <button
                     type="submit"
-                    className="w-full h-11 rounded-2xl bg-gradient-to-r from-[#FF2B6D] via-[#FF3366] to-[#E91E63] hover:opacity-95 text-xs font-bold text-white shadow-lg shadow-pink-500/30 transition-all active:scale-[0.98] cursor-pointer"
+                    className="w-full h-11 rounded-2xl bg-[#D94B76] hover:bg-[#C23D66] text-xs font-bold text-white shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                   >
                     Treo Lời Chúc Lên Cây
                   </button>

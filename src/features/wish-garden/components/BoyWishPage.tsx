@@ -215,7 +215,7 @@ export function BoyWishPage() {
     <div className="w-full min-h-screen bg-gradient-to-b from-[#FAF7F2] via-[#F8ECEF] to-[#F1DEE3] text-[#2C1820] flex flex-col items-center">
       {/* Toast notification */}
       {notification && (
-        <div className="fixed top-20 z-50 px-5 py-2.5 rounded-full bg-[#E06D88] text-white text-xs font-semibold shadow-xl animate-bounce">
+        <div className="fixed top-20 z-50 px-5 py-2.5 rounded-full bg-[#E06D88] text-white text-xs font-semibold shadow-md">
           {notification}
         </div>
       )}
@@ -223,12 +223,8 @@ export function BoyWishPage() {
       {/* Top Header & Switcher */}
       <header className="w-full max-w-4xl mx-auto px-4 pt-20 pb-4 flex flex-col sm:flex-row items-center justify-between gap-4 z-30">
         <div className="text-center sm:text-left">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-100/90 text-pink-700 text-[11px] font-bold uppercase tracking-wider mb-1">
-            <span>🌸</span>
-            <span>GDGoC HUST · 20/10 Bloom With Us</span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold font-serif text-[#431936]">
-            Cây Ước Nguyện & Lời Chúc 20/10
+          <h1 className="text-lg font-semibold font-serif text-[#431936]">
+            Lời chúc 20/10
           </h1>
           <p className="text-xs text-[#826A73]">
             {totalWishes > 0 ? `${totalWishes} món quà và lời chúc trên cây` : "Chưa có lời chúc nào trên cây"}
@@ -236,31 +232,31 @@ export function BoyWishPage() {
         </div>
 
         {/* View Switcher Tabs */}
-        <div className="flex items-center p-1 rounded-2xl bg-white/80 backdrop-blur-md border border-pink-200/80 shadow-md">
+        <div className="flex items-center p-1 rounded-xl bg-white/70 border border-[#E8D7DC]">
           <button
             type="button"
             onClick={() => setActiveTab("compose")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeTab === "compose"
-                ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/20"
+                ? "bg-[#D94B76] text-white"
                 : "text-slate-600 hover:text-pink-600"
             }`}
           >
-            <span>Soạn Thư & Treo Quà</span>
+            <span>Viết lời chúc</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab("tree")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeTab === "tree"
-                ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/20"
+                ? "bg-[#D94B76] text-white"
                 : "text-slate-600 hover:text-pink-600"
             }`}
           >
-            <span>Xem Cây Ước Nguyện</span>
+            <span>Xem cây</span>
             {totalWishes > 0 && (
-              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                 activeTab === "tree" ? "bg-white/20 text-white" : "bg-pink-100 text-pink-700"
               }`}>
                 {totalWishes}
@@ -348,7 +344,7 @@ export function BoyWishPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("tree")}
-                    className="w-full sm:w-1/2 h-11 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:opacity-95 text-white font-bold text-xs shadow-lg shadow-pink-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full sm:w-1/2 h-11 rounded-2xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <span>Xem Trên Cây Ước Nguyện</span>
                   </button>
@@ -512,7 +508,7 @@ export function BoyWishPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full h-12 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:opacity-95 text-white font-bold text-xs shadow-lg shadow-pink-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                      className="w-full h-12 rounded-2xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       {isSubmitting ? (
                         <>
@@ -521,9 +517,7 @@ export function BoyWishPage() {
                         </>
                       ) : (
                         <>
-                          <span>🌸</span>
-                          <span>Treo Lời Chúc Lên Cây Ước Nguyện</span>
-                          <span>→</span>
+                          <span>Treo lời chúc lên cây</span>
                         </>
                       )}
                     </button>

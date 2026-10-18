@@ -86,6 +86,80 @@ const TEST_QUESTIONS_FIXTURE: Question[] = [
   },
 ];
 
+// Used when no questions have been added from the dashboard.
+export const DEFAULT_QUESTIONS: Question[] = [
+  {
+    id: "q_1",
+    group_id: "grp_hust",
+    question_type: "multiple_choice",
+    text: "Câu lạc bộ GDG-HUST chính thức được thành lập vào năm nào?",
+    options: [
+      { key: "a", label: "2018" },
+      { key: "b", label: "2019" },
+      { key: "c", label: "2020" },
+      { key: "d", label: "2021" },
+    ],
+    correct_key: "c",
+    clue: "Nhận kí tự: K",
+  },
+  {
+    id: "q_2",
+    group_id: "grp_hust",
+    question_type: "multiple_choice",
+    text: "Sự kiện thường niên nổi bật nhất do GDG-HUST tổ chức là gì?",
+    options: [
+      { key: "a", label: "Hackathon" },
+      { key: "b", label: "CodeCamp" },
+      { key: "c", label: "TechDay" },
+      { key: "d", label: "DevFest" },
+    ],
+    correct_key: "a",
+    clue: "Nhận kí tự: T",
+  },
+  {
+    id: "q_3",
+    group_id: "grp_hust",
+    question_type: "multiple_choice",
+    text: "Tên ban tập hợp những đầu não của GDG-HUST là gì?",
+    options: [
+      { key: "a", label: "Operation" },
+      { key: "b", label: "Innovation" },
+      { key: "c", label: "Education" },
+      { key: "d", label: "Foundation" },
+    ],
+    correct_key: "b",
+    clue: "Nhận kí tự: R",
+  },
+  {
+    id: "q_4",
+    group_id: "grp_hust",
+    question_type: "multiple_choice",
+    text: "Trang phục truyền thống của người con gái Việt Nam là gì?",
+    options: [
+      { key: "a", label: "Áo tứ thân" },
+      { key: "b", label: "Áo bà ba" },
+      { key: "c", label: "Áo dài" },
+      { key: "d", label: "Áo nhật bình" },
+    ],
+    correct_key: "c",
+    clue: "Nhận kí tự: M",
+  },
+  {
+    id: "q_5",
+    group_id: "grp_hust",
+    question_type: "multiple_choice",
+    text: "Trụ sở chính của tập đoàn Google nằm ở tiểu bang nào của Hoa Kỳ?",
+    options: [
+      { key: "a", label: "New York" },
+      { key: "b", label: "Washington" },
+      { key: "c", label: "California" },
+      { key: "d", label: "Texas" },
+    ],
+    correct_key: "c",
+    clue: "Nhận kí tự: X",
+  },
+];
+
 export interface AppDatabaseOptions {
   storageKey?: string;
   isMemoryOnly?: boolean;
@@ -396,7 +470,8 @@ export class AppDatabaseService {
     const groupQuestions = this.state.questions.filter(
       (q) => !q.group_id || q.group_id === girl.group_id
     );
-    return groupQuestions.length > 0 ? groupQuestions : this.state.questions;
+    if (groupQuestions.length > 0) return groupQuestions;
+    return this.state.questions.length > 0 ? this.state.questions : DEFAULT_QUESTIONS;
   }
 
   public submitQuizAnswer(

@@ -215,7 +215,7 @@ export function Dashboard() {
             )}
             <button
               type="submit"
-              className="w-full h-11 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold text-xs shadow-lg shadow-pink-500/20 cursor-pointer"
+              className="w-full h-11 rounded-xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-semibold text-xs shadow-sm cursor-pointer"
             >
               Mở Khóa Bảng Điều Phối
             </button>
@@ -297,7 +297,7 @@ export function Dashboard() {
               onClick={() => setActiveTab(tab.key as any)}
               className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === tab.key
-                  ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/20"
+                  ? "bg-[#D94B76] text-white shadow-sm"
                   : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
               }`}
             >
@@ -367,7 +367,7 @@ export function Dashboard() {
               </div>
               <button
                 type="submit"
-                className="w-full h-10 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 font-semibold text-xs shadow-md cursor-pointer"
+                className="w-full h-10 rounded-xl bg-[#D94B76] font-semibold text-xs shadow-md cursor-pointer"
               >
                 Lưu Nhóm Mới
               </button>
@@ -485,7 +485,7 @@ export function Dashboard() {
               </div>
               <button
                 type="submit"
-                className="w-full h-10 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 font-semibold text-xs shadow-md cursor-pointer"
+                className="w-full h-10 rounded-xl bg-[#D94B76] font-semibold text-xs shadow-md cursor-pointer"
               >
                 Lưu Bạn Nam
               </button>
@@ -579,7 +579,7 @@ export function Dashboard() {
               </div>
               <button
                 type="submit"
-                className="w-full h-10 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 font-semibold text-xs shadow-md cursor-pointer"
+                className="w-full h-10 rounded-xl bg-[#D94B76] font-semibold text-xs shadow-md cursor-pointer"
               >
                 Lưu Bạn Nữ
               </button>
@@ -776,7 +776,7 @@ export function Dashboard() {
               </div>
               <button
                 type="submit"
-                className="w-full h-10 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 font-semibold text-xs shadow-md cursor-pointer"
+                className="w-full h-10 rounded-xl bg-[#D94B76] font-semibold text-xs shadow-md cursor-pointer"
               >
                 Lưu Câu Hỏi
               </button>
@@ -843,7 +843,7 @@ export function Dashboard() {
                 <button
                   type="button"
                   onClick={handleDownloadCSV}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs shadow-lg shadow-pink-500/25 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                  className="px-4 py-2 rounded-xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-bold text-xs shadow-sm transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
                 >
                   Tải File CSV Gửi Thủ Công
                 </button>
@@ -943,7 +943,7 @@ export function Dashboard() {
                                   notify(`Đã sao chép link của ${girl.name}!`);
                                 }
                               }}
-                              className="px-3 py-1 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 text-white font-semibold text-[11px] shadow-sm hover:opacity-95 transition-all cursor-pointer"
+                              className="px-3 py-1 rounded-lg bg-[#D94B76] text-white font-semibold text-[11px] shadow-sm hover:bg-[#C23D66] transition-all cursor-pointer"
                             >
                               Sao Chép Link
                             </button>

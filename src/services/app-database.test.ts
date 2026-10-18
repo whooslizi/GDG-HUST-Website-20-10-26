@@ -105,3 +105,12 @@ test("verifySecretCode unlocks tree and individual boy letters even without girl
   });
 });
 
+
+test("getQuestionsForGirl falls back to the default questions when none are stored", () => {
+  // No localStorage under node, so this starts with no stored questions.
+  const db = new AppDatabaseService({ enableSupabase: false });
+  const girl = db.getOrCreateGirl("fallback_token");
+  const questions = db.getQuestionsForGirl(girl);
+  assert.equal(questions.length, 5);
+  assert.equal(questions.map((q) => q.clue.slice(-1)).join(""), "KTRMX");
+});

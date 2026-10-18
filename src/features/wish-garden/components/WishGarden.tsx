@@ -110,7 +110,7 @@ export function WishGarden({ customDb }: { customDb?: AppDatabaseService }) {
           <div className="p-4 rounded-3xl bg-white/95 backdrop-blur-md border border-pink-200/90 shadow-xl text-xs space-y-2.5">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5">
-                <span className="size-8 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-400 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                <span className="size-8 rounded-xl bg-[#D94B76] text-white flex items-center justify-center font-bold text-xs shadow-sm">
                   GDG
                 </span>
                 <div>

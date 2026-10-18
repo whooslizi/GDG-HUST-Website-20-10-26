@@ -136,7 +136,7 @@ export function WishLetterRevealModal({
 
                 <button
                   type="submit"
-                  className="w-full h-11 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold text-xs shadow-md shadow-pink-500/20 transition-all cursor-pointer"
+                  className="w-full h-11 rounded-xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-semibold text-xs shadow-sm transition-all cursor-pointer"
                 >
                   Mở Thư Ngay
                 </button>
@@ -240,7 +240,7 @@ export function WishLetterRevealModal({
                       <button
                         type="button"
                         onClick={onClose}
-                        className="h-10 px-6 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 hover:opacity-95 text-white font-semibold text-xs shadow-md shadow-pink-500/20 transition-all cursor-pointer"
+                        className="h-10 px-6 rounded-full bg-[#D94B76] hover:bg-[#C23D66] text-white font-semibold text-xs shadow-sm transition-all cursor-pointer"
                       >
                         Gấp thư lại
                       </button>

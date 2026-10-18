@@ -101,7 +101,7 @@ export function QuizPlay({
     return (
       <main className="w-full min-h-screen bg-gradient-to-b from-[#FFF5F7] via-[#FDE8EF] to-[#F7D5DF] text-[#381A2B] flex flex-col items-center justify-center p-4 font-sans">
         <div className="w-full max-w-[440px] rounded-3xl bg-[#FFFDFB] p-7 border border-pink-200/90 shadow-2xl text-center">
-          <div className="size-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 text-white flex items-center justify-center text-xl mx-auto mb-3 font-serif font-bold shadow-md shadow-pink-500/20">
+          <div className="size-14 rounded-2xl bg-[#D94B76] text-white flex items-center justify-center text-xl mx-auto mb-3 font-serif font-bold shadow-sm">
             20/10
           </div>
 
@@ -113,7 +113,7 @@ export function QuizPlay({
             Nhập Mã Tham Gia Thử Thách
           </h1>
           <p className="text-xs text-slate-500 mt-1.5 leading-relaxed max-w-xs mx-auto">
-            Nhập mã cá nhân để giải 4 câu hỏi minigame và mở gợi ý nhận quà từ các bạn nam trên cây.
+            Nhập mã cá nhân để giải 5 câu hỏi minigame và mở gợi ý nhận quà từ các bạn nam trên cây.
           </p>
 
           <form onSubmit={handleLoginWithCode} className="mt-5 space-y-3">
@@ -140,7 +140,7 @@ export function QuizPlay({
 
             <button
               type="submit"
-              className="w-full h-11 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs shadow-lg shadow-pink-500/25 transition-all active:scale-[0.98] cursor-pointer"
+              className="w-full h-11 rounded-xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-bold text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
             >
               Vào Thử Thách →
             </button>
@@ -191,7 +191,7 @@ export function QuizPlay({
             <Link
               to="/boy"
               search={{ token: girl.token, group: girl.group_id, view: "tree" }}
-              className="w-full h-11 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 hover:opacity-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-pink-500/20 transition-all cursor-pointer no-underline"
+              className="w-full h-11 rounded-xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer no-underline"
             >
               <span>Đến Cây Ước Nguyện Nhận Quà</span>
               <span>→</span>
@@ -268,7 +268,7 @@ export function QuizPlay({
 
         <div className="w-full h-1.5 rounded-full bg-pink-100 overflow-hidden mb-6">
           <div
-            className="h-full bg-gradient-to-r from-pink-500 to-rose-400 transition-all duration-300 rounded-full"
+            className="h-full bg-[#D94B76] transition-all duration-300 rounded-full"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -340,7 +340,7 @@ export function QuizPlay({
             <button
               type="button"
               onClick={handleContinueAfterReveal}
-              className="w-full h-10 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 hover:opacity-95 text-white font-bold text-xs shadow-md shadow-pink-500/20 transition-all cursor-pointer"
+              className="w-full h-10 rounded-xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
             >
               Tiếp tục câu tiếp theo →
             </button>
