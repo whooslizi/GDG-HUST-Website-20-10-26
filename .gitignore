@@ -36,7 +36,12 @@ startup.sh
 # Markdown documentation
 *.md
 **/*.md
+!mailing/README.md
 
 # OS files
 .DS_Store
 Thumbs.db
+
+# Real mailing list (personal emails)
+mailing/recipients.csv
+__pycache__/

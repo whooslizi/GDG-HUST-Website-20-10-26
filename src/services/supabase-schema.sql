@@ -44,7 +44,9 @@ CREATE TABLE IF NOT EXISTS girls (
   completed_at TIMESTAMPTZ,
   unlocked_codes JSONB DEFAULT '[]'::jsonb,
   assigned_boy_id TEXT,
-  assigned_boy_name TEXT
+  assigned_boy_name TEXT,
+  team TEXT,
+  welcome_wish TEXT
 );
 
 -- 4. Table: questions (Quiz questions)

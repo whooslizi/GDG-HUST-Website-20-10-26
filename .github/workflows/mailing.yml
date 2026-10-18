@@ -1,0 +1,44 @@
+name: Send mail
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Codes to mail, comma-separated (e.g. KTRMX,PLQWZ). Empty = everyone in the list."
+        required: false
+        default: ""
+      send:
+        description: "Actually send. Unchecked = dry run that only lists who would get mail."
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  mail:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Write recipients list from secret
+        env:
+          RECIPIENTS_CSV: ${{ secrets.RECIPIENTS_CSV }}
+        run: |
+          if [ -z "$RECIPIENTS_CSV" ]; then
+            echo "::error::Add the RECIPIENTS_CSV repo secret (see mailing/README.md)."
+            exit 1
+          fi
+          printf '%s\n' "$RECIPIENTS_CSV" > mailing/recipients.csv
+
+      - name: Send
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          ONLY: ${{ inputs.only }}
+        run: python mailing/send.py ${{ inputs.send && '--send' || '' }}

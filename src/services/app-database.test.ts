@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { AppDatabaseService } from "./app-database.ts";
+import { AppDatabaseService, OPENABLE_PER_GIRL } from "./app-database.ts";
 
 test("AppDatabaseService initializes with default groups and girls", () => {
   const db = new AppDatabaseService({
@@ -113,4 +113,30 @@ test("getQuestionsForGirl falls back to the default questions when none are stor
   const questions = db.getQuestionsForGirl(girl);
   assert.equal(questions.length, 5);
   assert.equal(questions.map((q) => q.clue.slice(-1)).join(""), "KTRMX");
+});
+
+test("each girl can only open a stable, limited set of letters", () => {
+  const db = new AppDatabaseService({ isMemoryOnly: true, enableSupabase: false });
+  for (let i = 1; i <= 6; i++) {
+    db.submitBoyWish("GDGOC2010", `Boy ${i}`, `CODE${i}`, "Chúc mừng 20/10!", "peach");
+  }
+  const girl = db.getGirlByToken("LANCHI_2010");
+  assert.ok(girl, "login code is case-insensitive");
+
+  const openable = db.getOpenableBoyIds(girl!);
+  assert.equal(openable.size, OPENABLE_PER_GIRL);
+  assert.deepEqual([...db.getOpenableBoyIds(girl!)], [...openable]);
+
+  const boys = db.getTreeData().boys.filter((b) => b.secret_code);
+  const blocked = boys.find((b) => !openable.has(b.id))!;
+  const allowed = boys.find((b) => openable.has(b.id))!;
+
+  assert.equal(db.verifySecretCode(blocked.secret_code!, girl!.token).success, false);
+  assert.equal(db.verifySecretCode(allowed.secret_code!, girl!.token).success, true);
+
+  // The group code still can't open letters outside her set.
+  db.verifySecretCode("2010", girl!.token);
+  const tree = db.getTreeData(girl!.token);
+  assert.equal(tree.isBoyUnlocked(blocked), false);
+  assert.equal(tree.isBoyUnlocked(allowed), true);
 });

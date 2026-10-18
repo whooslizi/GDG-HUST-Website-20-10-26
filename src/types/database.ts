@@ -49,6 +49,8 @@ export interface Girl {
   unlocked_codes?: string[];
   assigned_boy_id?: string;
   assigned_boy_name?: string;
+  team?: string;
+  welcome_wish?: string;
 }
 
 export type OptionKey = "a" | "b" | "c" | "d";

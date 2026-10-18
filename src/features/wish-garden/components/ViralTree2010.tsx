@@ -7,6 +7,7 @@ interface ViralTree2010Props {
   boys: Boy[];
   isUnlocked: boolean;
   isBoyUnlocked?: (boy: Boy) => boolean;
+  isBoyOpenable?: (boy: Boy) => boolean;
   onSelectBoy: (boy: Boy) => void;
   onOpenBoyLoginModal: () => void;
   onOpenGirlAccountModal: () => void;
@@ -41,6 +42,7 @@ export function ViralTree2010({
   boys,
   isUnlocked,
   isBoyUnlocked,
+  isBoyOpenable,
   onSelectBoy,
   onOpenBoyLoginModal,
   onOpenGirlAccountModal,
@@ -339,6 +341,7 @@ export function ViralTree2010({
           {currentBoys.map((boy, idx) => {
             const coord = BRANCH_COORDINATES[idx % BRANCH_COORDINATES.length];
             const unlocked = isBoyUnlocked ? isBoyUnlocked(boy) : isUnlocked;
+            const shines = !unlocked && Boolean(isBoyOpenable?.(boy));
             const giftIcon = ORNAMENT_ICONS[boy.ornament_type] || "🌸";
             return (
               <div
@@ -349,7 +352,7 @@ export function ViralTree2010({
               >
                 <div className="w-[1px] h-3.5 sm:h-5 bg-gradient-to-b from-[#C5A059] to-[#916B14] shadow-xs -mb-0.5" />
 
-                <div className="relative flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-[#FFFDF9]/95 border border-[#E8D7DC] shadow-[0_4px_16px_-2px_rgba(136,73,90,0.14)] group-hover:border-[#E06D88] group-hover:shadow-[0_8px_24px_-3px_rgba(224,109,136,0.3)] transition-all">
+                <div className={`relative flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-[#FFFDF9]/95 border border-[#E8D7DC] shadow-[0_4px_16px_-2px_rgba(136,73,90,0.14)] group-hover:border-[#E06D88] group-hover:shadow-[0_8px_24px_-3px_rgba(224,109,136,0.3)] transition-all ${shines ? "animate-glow-2010 border-[#E06D88]" : ""}`}>
                   <span className="shrink-0 flex items-center justify-center size-4 sm:size-5 rounded-full bg-[#FAF0EE] border border-[#F0D5DA] text-[10px] sm:text-xs">
                     {giftIcon}
                   </span>

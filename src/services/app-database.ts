@@ -160,6 +160,18 @@ export const DEFAULT_QUESTIONS: Question[] = [
   },
 ];
 
+// How many letters on the tree each girl can open. Girls are not told about the limit.
+export const OPENABLE_PER_GIRL = 3;
+
+function hashString(text: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
 export interface AppDatabaseOptions {
   storageKey?: string;
   isMemoryOnly?: boolean;
@@ -424,7 +436,8 @@ export class AppDatabaseService {
   public getGirlByToken(token: string): Girl | null {
     const clean = token.trim();
     if (!clean) return null;
-    return this.state.girls.find((g) => g.token === clean) || null;
+    const upper = clean.toUpperCase();
+    return this.state.girls.find((g) => g.token.toUpperCase() === upper) || null;
   }
 
   public getBoyByToken(token: string): Boy | null {
@@ -754,6 +767,7 @@ export class AppDatabaseService {
     group?: Group;
     boys?: Boy[];
     unlockedBoy?: Boy;
+    blocked?: boolean;
   } {
     const clean = code.trim().toUpperCase();
     if (!clean) return { success: false };
@@ -769,6 +783,11 @@ export class AppDatabaseService {
 
     if (!isGroupCode && !matchingBoy) {
       return { success: false };
+    }
+
+    const girlForLimit = girlToken ? this.getGirlByToken(girlToken) : null;
+    if (girlForLimit && matchingBoy && !this.getOpenableBoyIds(girlForLimit).has(matchingBoy.id)) {
+      return { success: false, blocked: true };
     }
 
     const group =
@@ -821,8 +840,8 @@ export class AppDatabaseService {
     unlockedBoy?: Boy;
   }> {
     const syncResult = this.verifySecretCode(code, girlToken);
-    if (syncResult.success) {
-      return syncResult;
+    if (syncResult.success || syncResult.blocked) {
+      return { success: syncResult.success };
     }
 
     const clean = code.trim().toUpperCase();
@@ -873,6 +892,13 @@ export class AppDatabaseService {
             existingBoy.gift_hint = gift.gift_content || existingBoy.gift_hint;
           }
 
+          const limitedGirl = girlToken ? this.getGirlByToken(girlToken) : null;
+          if (limitedGirl && !this.getOpenableBoyIds(limitedGirl).has(existingBoy.id)) {
+            this.saveToStorage();
+            this.notifyListeners();
+            return { success: false };
+          }
+
           this.sessionUnlockedCodes.add(clean);
           this.saveSessionUnlockedCodes();
           this.saveToStorage();
@@ -903,6 +929,23 @@ export class AppDatabaseService {
     return { success: false };
   }
 
+  // Stable per girl: boys are ranked by a hash of girl token + boy id, so the pick survives reloads.
+  public getOpenableBoyIds(girl: Girl): Set<string> {
+    const boys = this.state.boys.filter(
+      (b) => b.secret_code && (!b.group_id || b.group_id === girl.group_id)
+    );
+    const ranked = [...boys].sort(
+      (a, b) => hashString(girl.token + a.id) - hashString(girl.token + b.id)
+    );
+    const ids = new Set(ranked.slice(0, OPENABLE_PER_GIRL).map((b) => b.id));
+    // Letters she already opened stay open even if new boys change the ranking.
+    const opened = new Set((girl.unlocked_codes || []).map((c) => c.toUpperCase()));
+    boys.forEach((b) => {
+      if (opened.has(b.secret_code!.trim().toUpperCase())) ids.add(b.id);
+    });
+    return ids;
+  }
+
   public getTreeData(girlToken?: string, preferredGroupId?: string) {
     let activeGroup: Group | null = null;
     let girl: Girl | null = null;
@@ -911,12 +954,11 @@ export class AppDatabaseService {
       activeGroup = this.state.groups.find((g) => g.id === preferredGroupId) || null;
     }
 
-    if (!activeGroup && girlToken) {
-      girl = this.getGirlByToken(girlToken);
-      if (girl) {
-        const girlGroupId = girl.group_id;
-        activeGroup = this.state.groups.find((g) => g.id === girlGroupId) || null;
-      }
+    if (girlToken) girl = this.getGirlByToken(girlToken);
+
+    if (!activeGroup && girl) {
+      const girlGroupId = girl.group_id;
+      activeGroup = this.state.groups.find((g) => g.id === girlGroupId) || null;
     }
 
     if (!activeGroup && this.state.groups.length > 0) {
@@ -932,6 +974,8 @@ export class AppDatabaseService {
       ...Array.from(this.sessionUnlockedCodes).map((c) => c.toUpperCase()),
     ]);
 
+    const openableIds = girl ? this.getOpenableBoyIds(girl) : null;
+
     const isGlobalUnlocked = Boolean(
       activeGroup &&
       unlockedCodes.has(activeGroup.secret_code.toUpperCase())
@@ -944,7 +988,9 @@ export class AppDatabaseService {
       allBoys: this.state.boys,
       isUnlocked: isGlobalUnlocked,
       unlockedCodes: Array.from(unlockedCodes),
+      isBoyOpenable: (boy: Boy) => !openableIds || openableIds.has(boy.id),
       isBoyUnlocked: (boy: Boy) => {
+        if (openableIds && !openableIds.has(boy.id)) return false;
         if (isGlobalUnlocked) return true;
         if (!boy.secret_code) return isGlobalUnlocked;
         return unlockedCodes.has(boy.secret_code.trim().toUpperCase());

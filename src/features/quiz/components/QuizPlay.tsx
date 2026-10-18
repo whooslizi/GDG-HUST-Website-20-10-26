@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { dbService, type AppDatabaseService } from "@/services/app-database";
 import type { Girl, Question, OptionKey } from "@/types/database";
+import { GirlWelcome } from "@/features/quiz/components/GirlWelcome";
 
 export function QuizPlay({
   token,
@@ -19,18 +20,23 @@ export function QuizPlay({
   const [loading, setLoading] = useState(true);
   const [inputCode, setInputCode] = useState("");
   const [codeError, setCodeError] = useState("");
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const loadGirlByToken = useCallback(
-    (userToken: string) => {
+    async (userToken: string): Promise<boolean> => {
       const clean = userToken.trim();
-      if (!clean) return;
+      if (!clean) return false;
 
       let found = activeDb.getGirlByToken(clean);
-      if (!found) {
-        found = activeDb.getOrCreateGirl(clean);
+      if (!found && activeDb.isUsingSupabase()) {
+        // First visit: the roster may not have synced from Supabase yet.
+        await activeDb.syncFromSupabase();
+        found = activeDb.getGirlByToken(clean);
       }
+      if (!found) return false;
 
       setGirl(found);
+      setShowWelcome(found.stage === "not_started");
       const list = activeDb.getQuestionsForGirl(found);
       setQuestions(list);
       setCurrentIndex(found.current_question_index || 0);
@@ -38,6 +44,7 @@ export function QuizPlay({
       if (typeof localStorage !== "undefined") {
         localStorage.setItem("active_girl_token", found.token);
       }
+      return true;
     },
     [activeDb]
   );
@@ -48,13 +55,17 @@ export function QuizPlay({
       resolvedToken = localStorage.getItem("active_girl_token") || "";
     }
 
-    if (resolvedToken) {
-      loadGirlByToken(resolvedToken);
+    if (!resolvedToken) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+    loadGirlByToken(resolvedToken).then((ok) => {
+      if (!ok && typeof localStorage !== "undefined") localStorage.removeItem("active_girl_token");
+      setLoading(false);
+    });
   }, [token, loadGirlByToken]);
 
-  function handleLoginWithCode(e?: React.FormEvent, customToken?: string) {
+  async function handleLoginWithCode(e?: React.FormEvent, customToken?: string) {
     if (e) e.preventDefault();
     const tokenToUse = customToken || inputCode;
     const clean = tokenToUse.trim();
@@ -65,7 +76,9 @@ export function QuizPlay({
     }
 
     setCodeError("");
-    loadGirlByToken(clean);
+    if (!(await loadGirlByToken(clean))) {
+      setCodeError("Mã chưa đúng, bạn kiểm tra lại giúp mình nhé!");
+    }
   }
 
   function handleResetQuiz() {
@@ -130,11 +143,11 @@ export function QuizPlay({
                 required
                 value={inputCode}
                 onChange={(e) => {
-                  setInputCode(e.target.value);
+                  setInputCode(e.target.value.toUpperCase());
                   setCodeError("");
                 }}
-                placeholder="Nhập mã của bạn (VD: lanchi_2010, GDGOC2010...)"
-                className="w-full h-11 px-4 rounded-xl border border-pink-200 bg-white font-mono text-xs text-slate-800 focus:outline-none focus:border-pink-500 shadow-sm placeholder:normal-case placeholder:font-sans placeholder:text-slate-400"
+                placeholder="Nhập mã của bạn"
+                className="w-full h-11 px-4 rounded-xl border border-pink-200 bg-white font-mono uppercase tracking-widest text-center text-sm text-slate-800 focus:outline-none focus:border-pink-500 shadow-sm placeholder:normal-case placeholder:font-sans placeholder:text-slate-400"
               />
             </div>
 
@@ -147,6 +160,17 @@ export function QuizPlay({
           </form>
         </div>
       </main>
+    );
+  }
+
+  if (showWelcome) {
+    return (
+      <GirlWelcome
+        name={girl.name}
+        code={girl.token}
+        wish={girl.welcome_wish || "Chúc bạn một ngày 20/10 thật rạng rỡ, ngập tràn niềm vui và yêu thương!"}
+        onDone={() => setShowWelcome(false)}
+      />
     );
   }
 

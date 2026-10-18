@@ -535,6 +535,7 @@ export function BoyWishPage() {
               boys={treeData.boys}
               isUnlocked={treeData.isUnlocked}
               isBoyUnlocked={treeData.isBoyUnlocked}
+              isBoyOpenable={treeData.girl ? treeData.isBoyOpenable : undefined}
               onSelectBoy={(boy) => setSelectedBoy(boy)}
               onOpenBoyLoginModal={() => setActiveTab("compose")}
               onOpenGirlAccountModal={() => setIsGirlAccountModalOpen(true)}

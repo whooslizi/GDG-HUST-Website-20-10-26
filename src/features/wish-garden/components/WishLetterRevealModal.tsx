@@ -57,14 +57,6 @@ export function WishLetterRevealModal({
       ok = await onDirectUnlockCode(clean);
     }
 
-    if (!ok && boy) {
-      if (boy.secret_code && boy.secret_code.trim().toUpperCase() === clean) {
-        ok = true;
-      } else if (clean === "2010" || clean === "GDGOC2010") {
-        ok = true;
-      }
-    }
-
     if (ok) {
       setIsLocallyUnlocked(true);
       setPhase("opening");
