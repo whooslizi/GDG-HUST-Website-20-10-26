@@ -536,10 +536,8 @@ export function BoyWishPage() {
               isUnlocked={treeData.isUnlocked}
               isBoyUnlocked={treeData.isBoyUnlocked}
               onSelectBoy={(boy) => setSelectedBoy(boy)}
-              onOpenSecretCodeModal={() => setIsCodeModalOpen(true)}
               onOpenBoyLoginModal={() => setActiveTab("compose")}
               onOpenGirlAccountModal={() => setIsGirlAccountModalOpen(true)}
-              onDirectUnlockCode={handleDirectUnlock}
             />
           </section>
         )}

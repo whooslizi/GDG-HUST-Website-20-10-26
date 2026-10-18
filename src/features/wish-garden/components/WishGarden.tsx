@@ -179,10 +179,8 @@ export function WishGarden({ customDb }: { customDb?: AppDatabaseService }) {
         isUnlocked={treeData.isUnlocked}
         isBoyUnlocked={treeData.isBoyUnlocked}
         onSelectBoy={(boy) => setSelectedBoy(boy)}
-        onOpenSecretCodeModal={() => setIsCodeModalOpen(true)}
         onOpenBoyLoginModal={() => setIsBoyLoginModalOpen(true)}
         onOpenGirlAccountModal={() => setIsGirlAccountModalOpen(true)}
-        onDirectUnlockCode={handleDirectUnlock}
       />
 
       <WishLetterRevealModal

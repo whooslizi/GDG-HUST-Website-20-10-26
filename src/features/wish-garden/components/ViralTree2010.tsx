@@ -8,10 +8,8 @@ interface ViralTree2010Props {
   isUnlocked: boolean;
   isBoyUnlocked?: (boy: Boy) => boolean;
   onSelectBoy: (boy: Boy) => void;
-  onOpenSecretCodeModal: () => void;
   onOpenBoyLoginModal: () => void;
   onOpenGirlAccountModal: () => void;
-  onDirectUnlockCode?: (code: string) => boolean | void | Promise<boolean | void>;
 }
 
 const ORNAMENT_ICONS: Record<string, string> = {
@@ -44,32 +42,15 @@ export function ViralTree2010({
   isUnlocked,
   isBoyUnlocked,
   onSelectBoy,
-  onOpenSecretCodeModal,
   onOpenBoyLoginModal,
   onOpenGirlAccountModal,
-  onDirectUnlockCode,
 }: ViralTree2010Props) {
-  const [inputCode, setInputCode] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
   const totalPages = Math.max(1, Math.ceil(boys.length / itemsPerPage));
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentBoys = boys.slice(startIndex, startIndex + itemsPerPage);
-
-  async function handleQuickSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!inputCode.trim()) {
-      onOpenSecretCodeModal();
-      return;
-    }
-    if (onDirectUnlockCode) {
-      await onDirectUnlockCode(inputCode.trim());
-      setInputCode("");
-    } else {
-      onOpenSecretCodeModal();
-    }
-  }
 
   return (
     <div className="relative w-full min-h-screen flex flex-col justify-between bg-gradient-to-b from-[#FAF7F2] via-[#F6ECE9] to-[#F1DEE3] text-[#2C1820] overflow-x-hidden font-sans select-none pb-28 pt-4 sm:pt-6">
@@ -433,26 +414,6 @@ export function ViralTree2010({
       </div>
 
       <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-1.5 sm:gap-2 max-w-[95vw] w-full sm:w-auto px-2">
-        <form
-          onSubmit={handleQuickSubmit}
-          className="flex items-center w-full sm:w-[440px] h-11 sm:h-13 px-2 py-1 rounded-full backdrop-blur-xl bg-white/90 border border-white/95 shadow-[0_12px_32px_-6px_rgba(136,73,90,0.2)]"
-        >
-          <input
-            type="text"
-            value={inputCode}
-            onChange={(e) => setInputCode(e.target.value.toUpperCase())}
-            placeholder="Nhập mã mở quà (VD: 2010)..."
-            className="flex-1 h-full px-3 sm:px-4 bg-transparent text-xs sm:text-sm text-[#2C1820] placeholder:text-[#826A73]/60 focus:outline-none font-mono uppercase tracking-wider min-w-0"
-          />
-
-          <button
-            type="submit"
-            className="h-8 sm:h-10 px-3.5 sm:px-5 rounded-full bg-[#D94B76] hover:bg-[#C23D66] text-white text-[11px] sm:text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
-          >
-            Mở Lời Chúc
-          </button>
-        </form>
-
         <div className="flex items-center gap-2.5 sm:gap-4 text-[10px] sm:text-[11px] text-[#826A73]">
           <button
             type="button"
