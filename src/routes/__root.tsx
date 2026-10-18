@@ -15,12 +15,12 @@ export const Route = createRootRoute({
 
 function NotFound() {
   return (
-    <main className="mx-auto max-w-lg px-4 py-16 text-center">
+    <main className="mx-auto max-w-lg min-h-screen px-4 flex flex-col items-center justify-center text-center">
       <h1 className="text-3xl font-bold font-serif text-slate-800">Không tìm thấy trang</h1>
       <p className="mt-2 text-sm text-slate-600">Đường dẫn không thuộc chương trình 20/10.</p>
       <Link
         to="/"
-        className="mt-4 inline-block px-5 py-2.5 rounded-2xl bg-pink-500 hover:bg-pink-600 text-white font-medium text-sm transition-colors shadow-md"
+        className="mt-4 inline-block px-5 py-2.5 rounded-2xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-medium text-sm transition-colors shadow-sm"
       >
         Về trang chủ
       </Link>
