@@ -23,8 +23,8 @@ A CSV with three columns: `code`, `name`, `email`. The code must match the girl'
 
 ```csv
 code,name,email
-KTRMX,Phạm Hiền Minh,hienminh@gmail.com
-PLQWZ,Đinh Phương Mai,phuongmai@gmail.com
+KTRMX,Phạm Hiền Minh,hienminh@example.com
+PLQWZ,Đinh Phương Mai,phuongmai@example.com
 ```
 
 See `recipients.example.csv`. You can make it in Excel or Google Sheets and export as CSV (UTF-8).
@@ -44,7 +44,7 @@ python3 mailing/send.py
 python3 mailing/send.py --only KTRMX,PLQWZ
 
 # Really send
-GMAIL_USER=club@gmail.com GMAIL_APP_PASSWORD='abcd efgh ijkl mnop' python3 mailing/send.py --only KTRMX --send
+GMAIL_USER=club.account@gmail.com GMAIL_APP_PASSWORD='abcd efgh ijkl mnop' python3 mailing/send.py --only KTRMX --send
 
 # Use a different list file
 python3 mailing/send.py --file path/to/list.csv

@@ -45,3 +45,7 @@ Thumbs.db
 # Real mailing list (personal emails)
 mailing/recipients.csv
 __pycache__/
+
+# Supabase SQL and roster (names, codes, wishes) stay local
+supabase/
+.supabase/
