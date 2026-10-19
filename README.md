@@ -1,4 +1,4 @@
-# GDG-HUST-Website-20-10-26
+﻿# GDG-HUST-Website-20-10-26
 
 girls plz keep your eyes away
 
@@ -74,7 +74,7 @@ flowchart TD
 | src/features/admin/Dashboard.tsx | Admin management panel |
 | src/services/app-database.ts | Database client (Supabase sync with localStorage fallback) |
 | src/services/email-template.ts | Email generator and CSV/JSON roster exports |
-| src/services/supabase.ts | Supabase client initialization |
+| src/services/supabase.ts | Supabase client initialization |i
 | supabase/setup.sql | Database schema, tables, public RLS policies, replication |
 | .github/workflows/deploy.yml | GitHub Actions build and Pages deployment workflow |
 | vite.config.ts | Vite build config and static environment variable bindings |

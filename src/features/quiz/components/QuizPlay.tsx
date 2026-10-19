@@ -4,6 +4,16 @@ import { dbService, type AppDatabaseService } from "@/services/app-database";
 import type { Girl, Question, OptionKey } from "@/types/database";
 import { GirlWelcome } from "@/features/quiz/components/GirlWelcome";
 
+// Event opens 18:00 22/10/2026 Vietnam time; girls who log in earlier only see a countdown.
+const OPEN_AT = new Date("2026-10-22T18:00:00+07:00").getTime();
+const DEFAULT_WISH = "Chúc bạn một ngày 20/10 thật rạng rỡ, ngập tràn niềm vui và yêu thương!";
+
+function formatCountdown(ms: number) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${Math.floor(s / 86400)} ngày ${pad(Math.floor(s / 3600) % 24)}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`;
+}
+
 export function QuizPlay({
   token,
   customDb,
@@ -21,6 +31,14 @@ export function QuizPlay({
   const [inputCode, setInputCode] = useState("");
   const [codeError, setCodeError] = useState("");
   const [showWelcome, setShowWelcome] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  const isOpen = now >= OPEN_AT;
+
+  useEffect(() => {
+    if (isOpen) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [isOpen]);
 
   const loadGirlByToken = useCallback(
     async (userToken: string): Promise<boolean> => {
@@ -163,12 +181,43 @@ export function QuizPlay({
     );
   }
 
+  if (!isOpen) {
+    return (
+      <main className="w-full min-h-screen bg-gradient-to-b from-[#FFF5F7] via-[#FDE8EF] to-[#F7D5DF] text-[#381A2B] flex flex-col items-center justify-center p-4 font-sans">
+        <div role="alert" className="w-full max-w-[440px] rounded-3xl bg-[#FFFDFB] p-7 border border-pink-200/90 shadow-2xl text-center">
+          <h1 className="text-xl font-bold font-serif text-[#431936]">
+            Xin lỗi, chưa đến ngày thực hiện 20/10 của GDG
+          </h1>
+          <p className="mt-4 text-xs text-[#826A73]">Gửi {girl.name},</p>
+          <p className="mt-2 text-base font-serif text-[#431936] leading-relaxed whitespace-pre-line">
+            Mặc dù vậy, GDG-HUST vẫn muốn gửi lời chúc sớm đến bạn: chúc bạn luôn xinh đẹp, rạng rỡ,
+            học tập thật tốt và luôn được yêu thương. Hẹn gặp bạn vào lúc 18:00 ngày 22/10/2026 để cùng
+            tham gia thử thách và mở những món quà bất ngờ mà các bạn nam đã chuẩn bị nhé!
+          </p>
+          <p className="mt-6 text-[10px] uppercase font-bold tracking-wider text-pink-700">
+            Mở cửa lúc 18:00 ngày 22/10/2026
+          </p>
+          <p className="mt-1 text-2xl font-mono font-bold text-[#D94B76] tabular-nums">
+            {formatCountdown(OPEN_AT - now)}
+          </p>
+          <button
+            type="button"
+            onClick={handleSwitchAccount}
+            className="mt-5 text-xs text-slate-500 hover:text-slate-700 cursor-pointer"
+          >
+            Đổi mã
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   if (showWelcome) {
     return (
       <GirlWelcome
         name={girl.name}
         code={girl.token}
-        wish={girl.welcome_wish || "Chúc bạn một ngày 20/10 thật rạng rỡ, ngập tràn niềm vui và yêu thương!"}
+        wish={girl.welcome_wish || DEFAULT_WISH}
         onDone={() => setShowWelcome(false)}
       />
     );
