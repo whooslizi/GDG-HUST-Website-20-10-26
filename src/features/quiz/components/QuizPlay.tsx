@@ -462,7 +462,7 @@ Khi bạn đến nơi, hãy mở lại lá thư này nhé: trò chơi sẽ chín
         setFeedback("idle");
         setCurrentIndex(result.nextIndex);
         if (result.completed) goToTree(result.girl);
-      }, 900);
+      }, 1800);
       return;
     }
 
@@ -635,9 +635,19 @@ Khi bạn đến nơi, hãy mở lại lá thư này nhé: trò chơi sẽ chín
         )}
 
         {feedback === "correct" && (
-          <div className="mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
-            <span>Chính xác!</span>
-          </div>
+          <motion.div
+            role="status"
+            initial={reduceMotion ? false : { scale: 0.6, opacity: 0, y: 8 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: "spring", damping: 12, stiffness: 320 }}
+            className="mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-center"
+          >
+            <p className="text-xs font-semibold text-emerald-700">Chính xác! Kí tự mở khóa:</p>
+            <p className="mt-1 text-4xl font-mono font-bold text-emerald-800 tracking-widest">
+              {/* clue is "Nhận kí tự: K" -> show just the letter */}
+              {currentQuestion?.clue.split(":").pop()?.trim() || currentQuestion?.clue}
+            </p>
+          </motion.div>
         )}
       </div>
     </main>
