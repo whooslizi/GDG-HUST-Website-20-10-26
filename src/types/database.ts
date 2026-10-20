@@ -50,6 +50,7 @@ export interface Girl {
   assigned_boy_id?: string;
   assigned_boy_name?: string;
   team?: string;
+  quiz_group?: string; // "Nhóm 1".."Nhóm 7", picks quiz questions 4-5
   welcome_wish?: string;
 }
 

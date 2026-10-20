@@ -108,7 +108,7 @@ const COMMON_QUESTIONS: Question[] = [
   mc("q_3", 3, "Trang phục truyền thống của người con gái Việt Nam là gì?", ["Áo tứ thân", "Áo bà ba", "Áo dài", "Áo nhật bình"], "c"),
 ];
 
-// Questions 4–5 differ per team ("Nhóm 1".."Nhóm 7"); picked from girl.team.
+// Questions 4–5 differ per group ("Nhóm 1".."Nhóm 7"); picked from girl.quiz_group.
 export const TEAM_QUESTIONS: Record<string, Question[]> = {
   "1": [
     ...COMMON_QUESTIONS,
@@ -147,8 +147,13 @@ export const TEAM_QUESTIONS: Record<string, Question[]> = {
   ],
 };
 
-// Used when no questions have been added from the dashboard and the girl has no known team.
+// Used when no questions have been added from the dashboard and the girl has no known quiz group.
 export const DEFAULT_QUESTIONS: Question[] = TEAM_QUESTIONS["1"];
+
+// What the public key may read (must match the GRANTs in supabase/secure.sql).
+const PUBLIC_GROUP_COLUMNS = "id, group_name, wish_message, created_at";
+const PUBLIC_BOY_COLUMNS =
+  "id, group_id, name, description, personal_wish, ornament_type, gift_hint, has_written_wish, assigned_girl_name";
 
 // How many letters on the tree each girl can open. Girls are not told about the limit.
 export const OPENABLE_PER_GIRL = 3;
@@ -179,8 +184,16 @@ export class AppDatabaseService {
   private syncTimer: any = null;
 
   constructor(options?: AppDatabaseOptions) {
-    this.storageKey = options?.storageKey || "bloom_2010_database_realtime_v1";
+    this.storageKey = options?.storageKey || "bloom_2010_database_realtime_v2";
     this.isMemoryOnly = Boolean(options?.isMemoryOnly);
+    // v1 cached every girl's code from before supabase/secure.sql; drop it.
+    if (!this.isMemoryOnly && typeof localStorage !== "undefined") {
+      try {
+        localStorage.removeItem("bloom_2010_database_realtime_v1");
+      } catch {
+        // ignore
+      }
+    }
     this.enableSupabase = Boolean(options?.enableSupabase);
     this.sessionUnlockedCodes = this.loadSessionUnlockedCodes();
     this.state = this.loadFromStorage();
@@ -366,11 +379,11 @@ export class AppDatabaseService {
     if (!this.enableSupabase || !supabase.isConfigured()) return false;
 
     try {
-      const [remoteGroups, remoteBoys, remoteGirls, remoteQuestions] = await Promise.all([
-        supabase.from<Group>("groups"),
-        supabase.from<Boy>("boys"),
-        supabase.from<Girl>("girls"),
-        supabase.from<Question>("questions"),
+      // Girls and questions are private (supabase/secure.sql): girls come one at a time via loginGirl,
+      // questions from TEAM_QUESTIONS in this bundle.
+      const [remoteGroups, remoteBoys] = await Promise.all([
+        supabase.from<Group>("groups", PUBLIC_GROUP_COLUMNS),
+        supabase.from<Boy>("boys", PUBLIC_BOY_COLUMNS),
       ]);
 
       let changed = false;
@@ -381,29 +394,12 @@ export class AppDatabaseService {
             this.state.groups = remoteGroups;
             changed = true;
           }
-        } else {
-          // Initialize default group on remote if none exists
-          supabase.insert<Group>("groups", DEFAULT_GROUPS[0]).catch(() => {});
         }
       }
 
       if (Array.isArray(remoteBoys)) {
         if (JSON.stringify(this.state.boys) !== JSON.stringify(remoteBoys)) {
           this.state.boys = remoteBoys;
-          changed = true;
-        }
-      }
-
-      if (Array.isArray(remoteGirls)) {
-        if (JSON.stringify(this.state.girls) !== JSON.stringify(remoteGirls)) {
-          this.state.girls = remoteGirls;
-          changed = true;
-        }
-      }
-
-      if (Array.isArray(remoteQuestions)) {
-        if (JSON.stringify(this.state.questions) !== JSON.stringify(remoteQuestions)) {
-          this.state.questions = remoteQuestions;
           changed = true;
         }
       }
@@ -421,6 +417,42 @@ export class AppDatabaseService {
 
   public isUsingSupabase(): boolean {
     return this.enableSupabase && supabase.isConfigured();
+  }
+
+  // Asks Supabase for just this girl (girl_login RPC) and caches her locally. Falls back to the local list.
+  public async loginGirl(token: string): Promise<Girl | null> {
+    const clean = token.trim();
+    if (!clean) return null;
+    if (!this.isUsingSupabase()) return this.getGirlByToken(clean);
+
+    const { data, error } = await supabase.client.rpc("girl_login", { p_token: clean });
+    if (error) {
+      console.warn("[Supabase] girl_login error:", error.message);
+      return this.getGirlByToken(clean);
+    }
+    if (!data) return null;
+
+    const remote = data as Girl;
+    const idx = this.state.girls.findIndex((g) => g.id === remote.id);
+    if (idx >= 0) this.state.girls[idx] = remote;
+    else this.state.girls.push(remote);
+    this.saveToStorage();
+    return remote;
+  }
+
+  private saveGirlProgress(girl: Girl): void {
+    if (!this.isUsingSupabase()) return;
+    Promise.resolve(
+      supabase.client.rpc("girl_save_progress", {
+        p_token: girl.token,
+        p_index: girl.current_question_index,
+        p_wrong: girl.wrong_attempts,
+        p_stage: girl.stage,
+        p_completed_at: girl.completed_at ?? null,
+      })
+    ).then(({ error }) => {
+      if (error) console.warn("[Supabase] girl_save_progress error:", error.message);
+    });
   }
 
   public getGirlByToken(token: string): Girl | null {
@@ -475,8 +507,8 @@ export class AppDatabaseService {
     );
     if (groupQuestions.length > 0) return groupQuestions;
     if (this.state.questions.length > 0) return this.state.questions;
-    // team may be stored as "3", "Nhóm 3", "nhom_3"...
-    const team = girl.team?.match(/\d+/)?.[0];
+    // quiz_group may be stored as "3", "Nhóm 3", "nhom_3"...
+    const team = girl.quiz_group?.match(/\d+/)?.[0];
     return (team && TEAM_QUESTIONS[team]) || DEFAULT_QUESTIONS;
   }
 
@@ -520,14 +552,7 @@ export class AppDatabaseService {
       this.saveToStorage();
       this.notifyListeners();
 
-      if (this.isUsingSupabase()) {
-        supabase.update<Girl>("girls", `token=eq.${girl.token}`, {
-          current_question_index: girl.current_question_index,
-          wrong_attempts: 0,
-          stage: girl.stage,
-          completed_at: girl.completed_at,
-        }).catch(() => {});
-      }
+      this.saveGirlProgress(girl);
 
       return {
         correct: true,
@@ -545,12 +570,7 @@ export class AppDatabaseService {
       this.saveToStorage();
       this.notifyListeners();
 
-      if (this.isUsingSupabase()) {
-        supabase.update<Girl>("girls", `token=eq.${girl.token}`, {
-          wrong_attempts: newWrong,
-          stage: "quiz",
-        }).catch(() => {});
-      }
+      this.saveGirlProgress(girl);
 
       return {
         correct: false,
@@ -575,14 +595,7 @@ export class AppDatabaseService {
     this.saveToStorage();
     this.notifyListeners();
 
-    if (this.isUsingSupabase()) {
-      supabase.update<Girl>("girls", `token=eq.${girl.token}`, {
-        current_question_index: 0,
-        wrong_attempts: 0,
-        stage: "not_started",
-        completed_at: null as any,
-      }).catch(() => {});
-    }
+    this.saveGirlProgress(girl);
 
     return girl;
   }
@@ -605,14 +618,7 @@ export class AppDatabaseService {
     }
     this.saveToStorage();
     this.notifyListeners();
-    if (this.isUsingSupabase()) {
-      supabase.update<Girl>("girls", `token=eq.${girl.token}`, {
-        current_question_index: nextIndex,
-        wrong_attempts: 0,
-        stage: girl.stage,
-        completed_at: girl.completed_at,
-      }).catch(() => {});
-    }
+    this.saveGirlProgress(girl);
     return { nextIndex, completed: isCompleted, girl };
   }
 
@@ -641,8 +647,8 @@ export class AppDatabaseService {
 
     let group = this.state.groups.find(
       (g) =>
-        g.group_access_code.toUpperCase() === cleanCode ||
-        g.secret_code.toUpperCase() === cleanCode
+        g.group_access_code?.toUpperCase() === cleanCode ||
+        g.secret_code?.toUpperCase() === cleanCode
     );
     if (!group) {
       group = this.state.groups[0] || DEFAULT_GROUPS[0];
@@ -685,26 +691,6 @@ export class AppDatabaseService {
     this.saveToStorage();
     this.notifyListeners();
 
-    if (this.isUsingSupabase()) {
-      // Ensure group exists then upsert boy and gifts
-      supabase.insert<Group>("groups", group).then(() => {
-        supabase.insert<Boy>("boys", boy!);
-        if (boy?.secret_code) {
-          void Promise.resolve(
-            supabase.client.from("gifts").upsert({
-              id: boy.id,
-              code: boy.secret_code.trim().toUpperCase(),
-              recipient_name: boy.assigned_girl_name || "",
-              sender_name: boy.name,
-              message: boy.personal_wish || "",
-              gift_content: boy.gift_hint || "",
-              ornament_type: boy.ornament_type || "lotus",
-            })
-          ).catch(() => {});
-        }
-      }).catch((err) => console.warn("[Supabase] submitBoyWish error:", err));
-    }
-
     return { success: true, boy: { ...boy } };
   }
 
@@ -729,24 +715,22 @@ export class AppDatabaseService {
     if (!res.success || !res.boy) return res;
 
     if (this.isUsingSupabase()) {
-      try {
-        const group = this.state.groups[0] || DEFAULT_GROUPS[0];
-        await supabase.insert<Group>("groups", group);
-        await supabase.insert<Boy>("boys", res.boy);
-        if (res.boy.secret_code) {
-          await supabase.client.from("gifts").upsert({
-            id: res.boy.id,
-            code: res.boy.secret_code.trim().toUpperCase(),
-            recipient_name: res.boy.assigned_girl_name || "",
-            sender_name: res.boy.name,
-            message: res.boy.personal_wish || "",
-            gift_content: res.boy.gift_hint || "",
-            ornament_type: res.boy.ornament_type || "lotus",
-          });
-        }
-      } catch (err) {
-        console.warn("[Supabase] submitBoyWishAsync error:", err);
+      const b = res.boy;
+      const { error } = await supabase.client.rpc("submit_boy_wish", {
+        p_group_id: b.group_id,
+        p_name: b.name,
+        p_secret_code: b.secret_code || "",
+        p_wish: b.personal_wish,
+        p_ornament: b.ornament_type,
+        p_assigned_girl_name: b.assigned_girl_name || "",
+        p_gift_hint: b.gift_hint || "",
+      });
+      if (error) {
+        console.warn("[Supabase] submit_boy_wish error:", error.message);
+        return { success: false, message: "Chưa gửi được lời chúc, bạn thử lại giúp mình nhé!" };
       }
+      // Pull the saved row (server-made id) so the tree matches Supabase.
+      await this.syncFromSupabase();
     }
 
     return res;
@@ -766,7 +750,7 @@ export class AppDatabaseService {
     if (!clean) return { success: false };
 
     const matchingGroup = this.state.groups.find(
-      (g) => g.secret_code.toUpperCase() === clean
+      (g) => g.secret_code?.toUpperCase() === clean
     );
     const matchingBoy = this.state.boys.find(
       (b) => b.secret_code && b.secret_code.trim().toUpperCase() === clean
@@ -967,27 +951,17 @@ export class AppDatabaseService {
       ...Array.from(this.sessionUnlockedCodes).map((c) => c.toUpperCase()),
     ]);
 
-    const openableIds = girl ? this.getOpenableBoyIds(girl) : null;
-
-    const isGlobalUnlocked = Boolean(
-      activeGroup &&
-      unlockedCodes.has(activeGroup.secret_code.toUpperCase())
-    );
 
     return {
       group: activeGroup,
       groups: this.state.groups,
       boys: groupBoys,
       allBoys: this.state.boys,
-      isUnlocked: isGlobalUnlocked,
+      // The tree is open: every wish can be read without a code.
+      isUnlocked: true,
       unlockedCodes: Array.from(unlockedCodes),
-      isBoyOpenable: (boy: Boy) => !openableIds || openableIds.has(boy.id),
-      isBoyUnlocked: (boy: Boy) => {
-        if (openableIds && !openableIds.has(boy.id)) return false;
-        if (isGlobalUnlocked) return true;
-        if (!boy.secret_code) return isGlobalUnlocked;
-        return unlockedCodes.has(boy.secret_code.trim().toUpperCase());
-      },
+      isBoyOpenable: (_boy: Boy) => true,
+      isBoyUnlocked: (_boy: Boy) => true,
       girl,
     };
   }

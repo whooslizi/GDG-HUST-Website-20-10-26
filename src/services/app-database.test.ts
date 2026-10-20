@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { AppDatabaseService, OPENABLE_PER_GIRL } from "./app-database.ts";
+import { AppDatabaseService } from "./app-database.ts";
 
 test("AppDatabaseService initializes with default groups and girls", () => {
   const db = new AppDatabaseService({
@@ -75,37 +75,6 @@ test("submitQuizAnswer handles multiple attempts and reveals answer", () => {
   assert.equal(correctAttempt.correct, true);
 });
 
-test("verifySecretCode unlocks tree and individual boy letters even without girl token", () => {
-  const db = new AppDatabaseService({
-    isMemoryOnly: true,
-    enableSupabase: false,
-  });
-
-  const treeBefore = db.getTreeData();
-  const minhAnh = treeBefore.boys.find((b) => b.name === "Minh Anh");
-  assert.ok(minhAnh);
-  assert.equal(treeBefore.isBoyUnlocked(minhAnh!), false);
-  assert.equal(treeBefore.isUnlocked, false);
-
-  // Unlock specifically with boy's secret code (SEN)
-  const resBoy = db.verifySecretCode("  sen  ");
-  assert.equal(resBoy.success, true);
-  assert.equal(resBoy.unlockedBoy?.name, "Minh Anh");
-
-  const treeAfterBoy = db.getTreeData();
-  assert.equal(treeAfterBoy.isBoyUnlocked(minhAnh!), true);
-
-  // Group code (2010) unlocks all boys
-  const resGroup = db.verifySecretCode("2010");
-  assert.equal(resGroup.success, true);
-  const treeAfterGroup = db.getTreeData();
-  assert.equal(treeAfterGroup.isUnlocked, true);
-  treeAfterGroup.boys.forEach((b) => {
-    assert.equal(treeAfterGroup.isBoyUnlocked(b), true);
-  });
-});
-
-
 test("getQuestionsForGirl falls back to the default questions when none are stored", () => {
   // No localStorage under node, so this starts with no stored questions.
   const db = new AppDatabaseService({ enableSupabase: false });
@@ -115,37 +84,20 @@ test("getQuestionsForGirl falls back to the default questions when none are stor
   assert.equal(questions.map((q) => q.clue.slice(-1)).join(""), "KTRMX");
 });
 
-test("each girl can only open a stable, limited set of letters", () => {
+test("the wish tree is open to everyone without a code", () => {
   const db = new AppDatabaseService({ isMemoryOnly: true, enableSupabase: false });
-  for (let i = 1; i <= 6; i++) {
-    db.submitBoyWish("GDGOC2010", `Boy ${i}`, `CODE${i}`, "Chúc mừng 20/10!", "peach");
+  db.submitBoyWish("GDGOC2010", "Boy 1", "CODE1", "Chúc mừng 20/10!", "peach");
+  for (const tree of [db.getTreeData(), db.getTreeData("LANCHI_2010")]) {
+    assert.equal(tree.isUnlocked, true);
+    tree.boys.forEach((b) => assert.equal(tree.isBoyUnlocked(b), true));
   }
-  const girl = db.getGirlByToken("LANCHI_2010");
-  assert.ok(girl, "login code is case-insensitive");
-
-  const openable = db.getOpenableBoyIds(girl!);
-  assert.equal(openable.size, OPENABLE_PER_GIRL);
-  assert.deepEqual([...db.getOpenableBoyIds(girl!)], [...openable]);
-
-  const boys = db.getTreeData().boys.filter((b) => b.secret_code);
-  const blocked = boys.find((b) => !openable.has(b.id))!;
-  const allowed = boys.find((b) => openable.has(b.id))!;
-
-  assert.equal(db.verifySecretCode(blocked.secret_code!, girl!.token).success, false);
-  assert.equal(db.verifySecretCode(allowed.secret_code!, girl!.token).success, true);
-
-  // The group code still can't open letters outside her set.
-  db.verifySecretCode("2010", girl!.token);
-  const tree = db.getTreeData(girl!.token);
-  assert.equal(tree.isBoyUnlocked(blocked), false);
-  assert.equal(tree.isBoyUnlocked(allowed), true);
 });
 
 test("each team gets its own questions 4-5 with correct answers", () => {
   const db = new AppDatabaseService({ enableSupabase: false });
   const girl = db.getOrCreateGirl("team_token");
   const answer = (team: string) => {
-    girl.team = team;
+    girl.quiz_group = team;
     return db.getQuestionsForGirl(girl).slice(3).map((q) => q.options.find((o) => o.key === q.correct_key)!.label);
   };
   // Decode the shift puzzles independently so a typo in the data shows up here.
@@ -158,6 +110,6 @@ test("each team gets its own questions 4-5 with correct answers", () => {
   assert.deepEqual(answer("6"), [shift([-1, 11, 0, 5, 10, 3], 4), "GDGHUST"]);
   assert.deepEqual(answer("7"), [shift([8, 2, 22, 20, 12, 15, 1], 3), "GDG"]);
   assert.deepEqual(answer("1"), ["PYTHON", "GDGHUST2025"]);
-  girl.team = undefined;
+  girl.quiz_group = undefined;
   assert.equal(db.getQuestionsForGirl(girl)[3].id, "t1_q_4");
 });

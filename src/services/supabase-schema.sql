@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS girls (
   assigned_boy_id TEXT,
   assigned_boy_name TEXT,
   team TEXT,
+  quiz_group TEXT,
   welcome_wish TEXT
 );
 

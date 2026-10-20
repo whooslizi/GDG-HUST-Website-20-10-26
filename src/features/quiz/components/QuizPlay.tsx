@@ -46,12 +46,8 @@ export function QuizPlay({
       const clean = userToken.trim();
       if (!clean) return false;
 
-      let found = activeDb.getGirlByToken(clean);
-      if (!found && activeDb.isUsingSupabase()) {
-        // First visit: the roster may not have synced from Supabase yet.
-        await activeDb.syncFromSupabase();
-        found = activeDb.getGirlByToken(clean);
-      }
+      // The roster is private: Supabase only returns the girl whose code matches.
+      const found = await activeDb.loginGirl(clean);
       if (!found) return false;
 
       setGirl(found);

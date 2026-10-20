@@ -85,11 +85,12 @@ export class SupabaseService {
     }
   }
 
-  public async from<T>(table: string, _queryParams: string = "select=*"): Promise<T[] | null> {
+  // columns: the public key may only read some columns (supabase/secure.sql), so "*" is refused there.
+  public async from<T>(table: string, columns: string = "*"): Promise<T[] | null> {
     if (!this.isConfigured()) return null;
 
     try {
-      const { data, error } = await this.client.from(table).select("*");
+      const { data, error } = await this.client.from(table).select(columns);
       if (error) {
         console.warn(`[Supabase] SELECT from ${table} failed:`, error.message);
         return null;
