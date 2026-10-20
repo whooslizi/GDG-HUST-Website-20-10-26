@@ -20,7 +20,7 @@ export function SiteHeader() {
     setGirl(readActiveGirl());
     return dbService.subscribe(() => setGirl(readActiveGirl()));
   }, [currentPath]);
-  // Visitors only see the wish tree; girls see the challenge, plus the tree once done. Dashboard is URL-only.
+  // Everyone sees the wish tree; girls also see the challenge. Logo goes to the challenge until it's done. Dashboard is URL-only.
   const showTree = !girl || girl.stage === "completed" || Boolean(girl.is_checker);
 
   return (
@@ -35,7 +35,6 @@ export function SiteHeader() {
       </Link>
 
       <nav className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium shrink-0">
-        {showTree && (
         <Link
           to="/boy"
           className={`px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full transition-all no-underline whitespace-nowrap ${
@@ -46,7 +45,6 @@ export function SiteHeader() {
         >
           Cây ước nguyện
         </Link>
-        )}
         {girl && (
         <Link
           to="/play"

@@ -342,6 +342,17 @@ Trang thư này là bí mật nho nhỏ giữa bạn và chúng mình thôi, đ�
             <p className="mt-1 text-2xl font-mono font-bold text-[#B4475A] tabular-nums">
               {formatCountdown(OPEN_AT - now)}
             </p>
+            <p className="mt-4 text-xs text-[#826A73] leading-relaxed">
+              Các bạn nam GDG cũng gửi các lời chúc đến cậu, hãy ấn vào{" "}
+              <Link
+                to="/boy"
+                search={{ token: girl.token, group: girl.group_id, view: "tree" }}
+                className="font-bold text-[#B4475A] bg-pink-100 px-1.5 py-0.5 rounded hover:bg-pink-200 no-underline"
+              >
+                cây ước nguyện
+              </Link>{" "}
+              để xem nhé.
+            </p>
             <button
               type="button"
               onClick={handleSwitchAccount}
