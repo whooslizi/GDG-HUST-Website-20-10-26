@@ -69,6 +69,7 @@ export interface Question {
     label: string;
   }[];
   correct_key: OptionKey;
+  hint?: string; // small note shown under the question text
   answer?: string; // question_type "text": what she must type (case and spaces ignored)
   clue: string;
 }

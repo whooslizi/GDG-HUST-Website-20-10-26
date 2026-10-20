@@ -520,6 +520,11 @@ Khi bạn đến nơi, hãy mở lại lá thư này nhé: trò chơi sẽ chín
         <h2 className="text-lg font-bold text-[#381A2B] leading-snug">
           {currentQuestion?.text}
         </h2>
+        {currentQuestion?.hint && (
+          <p className="mt-3 px-3 py-2 rounded-xl bg-pink-50 border border-pink-100 text-sm text-[#B4475A]">
+            {currentQuestion.hint}
+          </p>
+        )}
 
         {currentQuestion?.question_type === "text" ? (
           <form onSubmit={handleTypedSubmit} className="mt-5 space-y-2.5">

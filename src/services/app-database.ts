@@ -134,8 +134,11 @@ const COMMON_QUESTIONS: Question[] = [
 
 // Question 5 is the same for every group.
 const Q5_TEXT =
-  "Trong khoa học máy tính, mỗi ký tự chữ cái đều được định danh bằng một mã số ASCII (hệ thập phân). Biết chữ A = 65, hãy giải mã dãy số sau để tìm ra từ ghép bí ẩn gửi tặng những cô gái tuyệt vời: 66 - 76 - 79 - 79 - 77 - 65 - 90 - 73 - 78 - 71 (Gợi ý: Nhập đáp án bằng tiếng Anh viết hoa, không dấu cách).";
-const q5 = (id: string) => typed(id, 5, Q5_TEXT, "BLOOMAZING");
+  "Trong khoa học máy tính, mỗi ký tự chữ cái đều được định danh bằng một mã số ASCII (hệ thập phân). Biết chữ A = 65, hãy giải mã dãy số sau để tìm ra từ ghép bí ẩn gửi tặng những cô gái tuyệt vời: 66 - 76 - 79 - 79 - 77 - 65 - 90 - 73 - 78 - 71";
+const q5 = (id: string): Question => ({
+  ...typed(id, 5, Q5_TEXT, "BLOOMAZING"),
+  hint: "Gợi ý: Nhập đáp án bằng tiếng Anh viết hoa, không dấu cách.",
+});
 
 // Questions 4–5 differ per group ("Nhóm 1".."Nhóm 7"); picked from girl.quiz_group.
 export const TEAM_QUESTIONS: Record<string, Question[]> = {
