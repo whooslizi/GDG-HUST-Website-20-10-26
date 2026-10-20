@@ -86,79 +86,69 @@ const TEST_QUESTIONS_FIXTURE: Question[] = [
   },
 ];
 
-// Used when no questions have been added from the dashboard.
-export const DEFAULT_QUESTIONS: Question[] = [
-  {
-    id: "q_1",
+// Clue letter per question position, shared by every team.
+const CLUES = ["K", "T", "R", "M", "X"];
+
+function mc(id: string, n: number, text: string, labels: string[], correct: OptionKey): Question {
+  const keys: OptionKey[] = ["a", "b", "c", "d"];
+  return {
+    id,
     group_id: "grp_hust",
     question_type: "multiple_choice",
-    text: "Câu lạc bộ GDG-HUST chính thức được thành lập vào năm nào?",
-    options: [
-      { key: "a", label: "2018" },
-      { key: "b", label: "2019" },
-      { key: "c", label: "2020" },
-      { key: "d", label: "2021" },
-    ],
-    correct_key: "c",
-    clue: "Nhận kí tự: K",
-  },
-  {
-    id: "q_2",
-    group_id: "grp_hust",
-    question_type: "multiple_choice",
-    text: "Sự kiện thường niên nổi bật nhất do GDG-HUST tổ chức là gì?",
-    options: [
-      { key: "a", label: "Hackathon" },
-      { key: "b", label: "CodeCamp" },
-      { key: "c", label: "TechDay" },
-      { key: "d", label: "DevFest" },
-    ],
-    correct_key: "a",
-    clue: "Nhận kí tự: T",
-  },
-  {
-    id: "q_3",
-    group_id: "grp_hust",
-    question_type: "multiple_choice",
-    text: "Tên ban tập hợp những đầu não của GDG-HUST là gì?",
-    options: [
-      { key: "a", label: "Operation" },
-      { key: "b", label: "Innovation" },
-      { key: "c", label: "Education" },
-      { key: "d", label: "Foundation" },
-    ],
-    correct_key: "b",
-    clue: "Nhận kí tự: R",
-  },
-  {
-    id: "q_4",
-    group_id: "grp_hust",
-    question_type: "multiple_choice",
-    text: "Trang phục truyền thống của người con gái Việt Nam là gì?",
-    options: [
-      { key: "a", label: "Áo tứ thân" },
-      { key: "b", label: "Áo bà ba" },
-      { key: "c", label: "Áo dài" },
-      { key: "d", label: "Áo nhật bình" },
-    ],
-    correct_key: "c",
-    clue: "Nhận kí tự: M",
-  },
-  {
-    id: "q_5",
-    group_id: "grp_hust",
-    question_type: "multiple_choice",
-    text: "Trụ sở chính của tập đoàn Google nằm ở tiểu bang nào của Hoa Kỳ?",
-    options: [
-      { key: "a", label: "New York" },
-      { key: "b", label: "Washington" },
-      { key: "c", label: "California" },
-      { key: "d", label: "Texas" },
-    ],
-    correct_key: "c",
-    clue: "Nhận kí tự: X",
-  },
+    text,
+    options: labels.map((label, i) => ({ key: keys[i], label })),
+    correct_key: correct,
+    clue: `Nhận kí tự: ${CLUES[n - 1]}`,
+  };
+}
+
+const COMMON_QUESTIONS: Question[] = [
+  mc("q_1", 1, "Câu lạc bộ GDG-HUST chính thức được thành lập vào năm nào?", ["2018", "2019", "2020", "2021"], "c"),
+  mc("q_2", 2, "Sự kiện thường niên nổi bật nhất do GDG-HUST tổ chức là gì?", ["Hackathon", "CodeCamp", "TechDay", "DevFest"], "a"),
+  mc("q_3", 3, "Trang phục truyền thống của người con gái Việt Nam là gì?", ["Áo tứ thân", "Áo bà ba", "Áo dài", "Áo nhật bình"], "c"),
 ];
+
+// Questions 4–5 differ per team ("Nhóm 1".."Nhóm 7"); picked from girl.team.
+export const TEAM_QUESTIONS: Record<string, Question[]> = {
+  "1": [
+    ...COMMON_QUESTIONS,
+    mc("t1_q_4", 4, "Cho phương trình: 2x + 6 = 10. Tính x. Dãy số sau đã bị cộng thêm x đơn vị: 18, 27, 22, 10, 17, 16. Giải phương trình và giải mã thông điệp.", ["PASCAL", "PYTHON", "PYTORCH", "PHOTON"], "b"),
+    mc("t1_q_5", 5, "Giải mã chuỗi mật mã dạng Base64 sau để tìm từ khóa bí ẩn: R0RHSFVTVDIwMjU=", ["GDGHUST2024", "GDGOCHUST", "GDGHUST2025", "HUSTGDG2025"], "c"),
+  ],
+  "2": [
+    ...COMMON_QUESTIONS,
+    mc("t2_q_4", 4, "Cho phương trình x^2 - 9 = 0 (x > 0). Dãy số sau đã bị trừ đi x: 0, 5, 15, 12, 10, 2. Giải mã thông điệp.", ["CHROME", "CHARGE", "CHOOSE", "CLOSED"], "a"),
+    mc("t2_q_5", 5, "Giải mã chuỗi số ở hệ cơ số 16 (Hexadecimal) sau sang dạng văn bản ASCII: 47 44 47 48 55 53 54", ["GDGHUTS", "GDGOHUST", "HUSTGDG", "GDGHUST"], "d"),
+  ],
+  "3": [
+    ...COMMON_QUESTIONS,
+    mc("t3_q_4", 4, "Tính biểu thức k = 15 - 3 × 4. Dãy số sau đã bị cộng thêm k: 7, 4, 23, 4. Giải mã thông điệp.", ["DART", "DATA", "JAVA", "GATE"], "b"),
+    mc("t3_q_5", 5, "Giải mã chuỗi thuật toán xoay 13 vị trí (ROT13): TQTUHFG", ["GDGHUST", "GDGOHUS", "HUSTGDG", "GDHGUST"], "a"),
+  ],
+  "4": [
+    ...COMMON_QUESTIONS,
+    mc("t4_q_4", 4, "Cho biểu thức: x = √16 + 1. Dãy số sau đã bị trừ đi x: 8, -4, 15, -2, 3. Tìm x và giải mã thông điệp.", ["MARCH", "WATCH", "MATCH", "MACRO"], "c"),
+    mc("t4_q_5", 5, "Giải mã chuỗi mã Nhị phân (Binary) 8-bit sau sang chữ cái: 01000111 01000100 01000111", ["GDE", "DGD", "GGD", "GDG"], "d"),
+  ],
+  "5": [
+    ...COMMON_QUESTIONS,
+    mc("t5_q_4", 4, "Cho phương trình: 3x - 5 = 10. Tính x. Dãy số mã hóa (cộng thêm x): 16, 10, 30, 7, 20, 6, 23, 9. Hãy tìm x và giải mã.", ["KEYBOARD", "KEYWORDS", "KEYCHAIN", "BILLBOARD"], "a"),
+    mc("t5_q_5", 5, "Giải mã chuỗi mã Morse sau: --. -.. --. / .... ..- ... -", ["GDG HUTS", "GDG HUST", "GDE HUST", "DGD HUST"], "b"),
+  ],
+  "6": [
+    ...COMMON_QUESTIONS,
+    mc("t6_q_4", 4, "Cho phép tính: x = 10 - √36. Dãy số mã hóa (trừ đi x): -1, 11, 0, 5, 10, 3. Hãy tìm x và giải mã thông điệp.", ["CODING", "CODERS", "COOKIE", "CORING"], "a"),
+    mc("t6_q_5", 5, "Giải mã chuỗi zích-zắc (Rail Fence Cipher - 2 dòng): Dòng 1: G G U T — Dòng 2: D H S", ["GGUTDHS", "GDGHUST", "GDGUHST", "HUSTGDG"], "b"),
+  ],
+  "7": [
+    ...COMMON_QUESTIONS,
+    mc("t7_q_4", 4, "Cho phép tính: x = 2^3 - 5. Dãy số sau đã bị trừ đi x: 8, 2, 22, 20, 12, 15, 1. Tìm x và giải mã thông điệp.", ["KEYCODE", "KEYWORD", "KEYNOTE", "KEYPORT"], "b"),
+    mc("t7_q_5", 5, "Giải mật mã Vigenère với bản mã là QHE và từ khóa (Key) là KEY:", ["GDG", "GHG", "DGD", "HUS"], "a"),
+  ],
+};
+
+// Used when no questions have been added from the dashboard and the girl has no known team.
+export const DEFAULT_QUESTIONS: Question[] = TEAM_QUESTIONS["1"];
 
 // How many letters on the tree each girl can open. Girls are not told about the limit.
 export const OPENABLE_PER_GIRL = 3;
@@ -484,7 +474,10 @@ export class AppDatabaseService {
       (q) => !q.group_id || q.group_id === girl.group_id
     );
     if (groupQuestions.length > 0) return groupQuestions;
-    return this.state.questions.length > 0 ? this.state.questions : DEFAULT_QUESTIONS;
+    if (this.state.questions.length > 0) return this.state.questions;
+    // team may be stored as "3", "Nhóm 3", "nhom_3"...
+    const team = girl.team?.match(/\d+/)?.[0];
+    return (team && TEAM_QUESTIONS[team]) || DEFAULT_QUESTIONS;
   }
 
   public submitQuizAnswer(

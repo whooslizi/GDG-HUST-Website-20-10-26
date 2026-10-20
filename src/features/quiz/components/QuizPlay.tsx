@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { dbService, type AppDatabaseService } from "@/services/app-database";
 import type { Girl, Question, OptionKey } from "@/types/database";
@@ -22,6 +22,7 @@ export function QuizPlay({
   customDb?: AppDatabaseService;
 }) {
   const activeDb = customDb || dbService;
+  const navigate = useNavigate();
   const [girl, setGirl] = useState<Girl | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -62,6 +63,7 @@ export function QuizPlay({
       if (typeof localStorage !== "undefined") {
         localStorage.setItem("active_girl_token", found.token);
       }
+      activeDb.notifyListeners();
       return true;
     },
     [activeDb]
@@ -114,6 +116,7 @@ export function QuizPlay({
     if (typeof localStorage !== "undefined") {
       localStorage.removeItem("active_girl_token");
     }
+    activeDb.notifyListeners();
     setGirl(null);
     setInputCode("");
     setFeedback("idle");
@@ -298,6 +301,7 @@ export function QuizPlay({
         setPickedKey(null);
         setFeedback("idle");
         setCurrentIndex(result.nextIndex);
+        if (result.completed) goToTree(result.girl);
       }, 900);
       return;
     }
@@ -316,6 +320,12 @@ export function QuizPlay({
     setPickedKey(null);
     setFeedback("idle");
     setCurrentIndex(result.nextIndex);
+    if (result.completed) goToTree(result.girl);
+  }
+
+  function goToTree(g: Girl) {
+    activeDb.notifyListeners();
+    navigate({ to: "/boy", search: { token: g.token, group: g.group_id, view: "tree" } });
   }
 
   const progressPercent = Math.round(((currentIndex + 1) / questions.length) * 100);

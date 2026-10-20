@@ -140,3 +140,24 @@ test("each girl can only open a stable, limited set of letters", () => {
   assert.equal(tree.isBoyUnlocked(blocked), false);
   assert.equal(tree.isBoyUnlocked(allowed), true);
 });
+
+test("each team gets its own questions 4-5 with correct answers", () => {
+  const db = new AppDatabaseService({ enableSupabase: false });
+  const girl = db.getOrCreateGirl("team_token");
+  const answer = (team: string) => {
+    girl.team = team;
+    return db.getQuestionsForGirl(girl).slice(3).map((q) => q.options.find((o) => o.key === q.correct_key)!.label);
+  };
+  // Decode the shift puzzles independently so a typo in the data shows up here.
+  const shift = (nums: number[], k: number) => nums.map((n) => String.fromCharCode(64 + n + k)).join("");
+  assert.deepEqual(answer("Nhóm 1"), [shift([18, 27, 22, 10, 17, 16], -2), atob("R0RHSFVTVDIwMjU=")]);
+  assert.deepEqual(answer("2"), [shift([0, 5, 15, 12, 10, 2], 3), "GDGHUST"]);
+  assert.deepEqual(answer("3"), [shift([7, 4, 23, 4], -3), "GDGHUST"]);
+  assert.deepEqual(answer("4"), [shift([8, -4, 15, -2, 3], 5), "GDG"]);
+  assert.deepEqual(answer("5"), [shift([16, 10, 30, 7, 20, 6, 23, 9], -5), "GDG HUST"]);
+  assert.deepEqual(answer("6"), [shift([-1, 11, 0, 5, 10, 3], 4), "GDGHUST"]);
+  assert.deepEqual(answer("7"), [shift([8, 2, 22, 20, 12, 15, 1], 3), "GDG"]);
+  assert.deepEqual(answer("1"), ["PYTHON", "GDGHUST2025"]);
+  girl.team = undefined;
+  assert.equal(db.getQuestionsForGirl(girl)[3].id, "t1_q_4");
+});
