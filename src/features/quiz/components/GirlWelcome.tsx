@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { LetterSheet } from "@/features/quiz/components/LetterSheet";
 
 interface GirlWelcomeProps {
   name: string;
@@ -33,6 +34,25 @@ export function GirlWelcome({ name, code, wish, onDone }: GirlWelcomeProps) {
     const t = setTimeout(() => setPhase("envelope"), 1100);
     return () => clearTimeout(t);
   }, [phase, done, steps.length]);
+
+  if (phase === "letter") {
+    return (
+      <LetterSheet
+        to={name}
+        footer={
+          <button
+            type="button"
+            onClick={onDone}
+            className="w-full h-12 rounded-xl bg-[#B4475A] hover:bg-[#9A3A4C] text-white font-semibold text-sm shadow-sm transition-colors cursor-pointer"
+          >
+            Bắt đầu thử thách
+          </button>
+        }
+      >
+        {wish}
+      </LetterSheet>
+    );
+  }
 
   return (
     <main className="w-full min-h-screen bg-gradient-to-b from-[#FFF5F7] via-[#FDE8EF] to-[#F7D5DF] text-[#381A2B] flex flex-col items-center justify-center p-4 font-sans">
@@ -107,29 +127,6 @@ export function GirlWelcome({ name, code, wish, onDone }: GirlWelcomeProps) {
           </motion.button>
         )}
 
-        {phase === "letter" && (
-          <motion.div
-            key="letter"
-            initial={{ opacity: 0, y: 40, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ type: "spring", damping: 22, stiffness: 220 }}
-            className="w-full max-w-[440px] rounded-2xl bg-[#FFFDF9] border border-[#EBDCCF] shadow-xl p-7 sm:p-8"
-          >
-            <p className="text-xs text-[#826A73]">Gửi {name},</p>
-            <p className="mt-5 text-lg sm:text-xl font-serif text-[#431936] leading-relaxed whitespace-pre-line">
-              {wish}
-            </p>
-            <p className="mt-6 text-right text-sm font-serif text-[#826A73]">— GDG HUST</p>
-
-            <button
-              type="button"
-              onClick={onDone}
-              className="mt-7 w-full h-11 rounded-xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-semibold text-xs shadow-sm transition-colors cursor-pointer"
-            >
-              Bắt đầu thử thách
-            </button>
-          </motion.div>
-        )}
       </AnimatePresence>
     </main>
   );

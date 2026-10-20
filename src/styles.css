@@ -26,6 +26,8 @@
 
 @theme {
   --font-display: "Fraunces", "Georgia", serif;
+  --font-hand: "Patrick Hand", "Comic Sans MS", cursive;
+  --font-script: "Dancing Script", cursive;
   --font-sans: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   --color-cream: #FFF9F5;

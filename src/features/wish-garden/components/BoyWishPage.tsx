@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useRouterState } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { dbService } from "@/services/app-database";
 import { ViralTree2010 } from "@/features/wish-garden/components/ViralTree2010";
 import { SecretCodeModal } from "@/features/wish-garden/components/SecretCodeModal";
@@ -22,15 +22,6 @@ export function BoyWishPage() {
   const queryGroup = searchParams.get("group") || undefined;
   const queryView = searchParams.get("view") || "";
 
-  // Determine initial tab:
-  // If explicitly view=tree or if queryToken belongs to a girl, show tree
-  // Otherwise, default to "compose" for boys
-  const [activeTab, setActiveTab] = useState<"compose" | "tree">(() => {
-    if (queryView === "tree") return "tree";
-    if (queryToken && dbService.getGirlByToken(queryToken)) return "tree";
-    return "compose";
-  });
-
   const [activeToken, setActiveToken] = useState<string | undefined>(() => {
     if (queryToken) return queryToken;
     if (typeof localStorage !== "undefined") {
@@ -38,6 +29,15 @@ export function BoyWishPage() {
     }
     return undefined;
   });
+
+  // Only the boys' code (logged in on /play) may write; everyone else just views the tree.
+  // Supabase enforces the same rule in submit_boy_wish.
+  const canWrite = Boolean(activeToken && dbService.getGirlByToken(activeToken)?.is_checker);
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<"compose" | "tree">(() =>
+    canWrite && queryView !== "tree" ? "compose" : "tree"
+  );
+  const openComposer = () => (canWrite ? setActiveTab("compose") : navigate({ to: "/play" }));
 
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>(queryGroup);
   const [treeData, setTreeData] = useState(() => dbService.getTreeData(activeToken, queryGroup));
@@ -122,7 +122,7 @@ export function BoyWishPage() {
 
     try {
       const res = await dbService.submitBoyWishAsync(
-        "GDGOC2010",
+        activeToken || "",
         boyName.trim(),
         cleanSecret,
         personalWish.trim(),
@@ -233,6 +233,7 @@ export function BoyWishPage() {
 
         {/* View Switcher Tabs */}
         <div className="flex items-center p-1 rounded-xl bg-white/70 border border-[#E8D7DC]">
+          {canWrite && (
           <button
             type="button"
             onClick={() => setActiveTab("compose")}
@@ -244,6 +245,7 @@ export function BoyWishPage() {
           >
             <span>Viết lời chúc</span>
           </button>
+          )}
 
           <button
             type="button"
@@ -268,7 +270,7 @@ export function BoyWishPage() {
 
       {/* Main Content Area */}
       <div className="w-full flex-1 flex flex-col items-center">
-        {activeTab === "compose" ? (
+        {activeTab === "compose" && canWrite ? (
           <section className="w-full max-w-xl mx-auto px-4 py-4 mb-16 animate-fade-in">
             {confirmedData ? (
               /* Success / Voucher State */
@@ -537,7 +539,7 @@ export function BoyWishPage() {
               isBoyUnlocked={treeData.isBoyUnlocked}
               isBoyOpenable={treeData.girl ? treeData.isBoyOpenable : undefined}
               onSelectBoy={(boy) => setSelectedBoy(boy)}
-              onOpenBoyLoginModal={() => setActiveTab("compose")}
+              onOpenBoyLoginModal={openComposer}
               onOpenGirlAccountModal={() => setIsGirlAccountModalOpen(true)}
             />
           </section>

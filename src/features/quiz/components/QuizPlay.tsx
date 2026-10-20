@@ -1,8 +1,11 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
-import { dbService, type AppDatabaseService } from "@/services/app-database";
+import { motion, useReducedMotion } from "framer-motion";
+import { dbService, TEAM_QUESTIONS, type AppDatabaseService } from "@/services/app-database";
 import type { Girl, Question, OptionKey } from "@/types/database";
 import { GirlWelcome } from "@/features/quiz/components/GirlWelcome";
+import { LetterSheet } from "@/features/quiz/components/LetterSheet";
+import { QuestionReview } from "@/features/quiz/components/QuestionReview";
 
 // Event opens 18:00 22/10/2026 Vietnam time; girls who log in earlier only see a countdown.
 const OPEN_AT = new Date("2026-10-22T18:00:00+07:00").getTime();
@@ -32,6 +35,12 @@ export function QuizPlay({
   const [inputCode, setInputCode] = useState("");
   const [codeError, setCodeError] = useState("");
   const [showWelcome, setShowWelcome] = useState(false);
+  // Boys' code: which group's game they picked ("" = show the picker), or the answer sheet.
+  const [boyTeam, setBoyTeam] = useState("");
+  const [showAnswers, setShowAnswers] = useState(false);
+  const [opening, setOpening] = useState(false);
+  const [shakeKey, setShakeKey] = useState(0);
+  const reduceMotion = useReducedMotion();
   const [now, setNow] = useState(() => Date.now());
   const isOpen = now >= OPEN_AT;
 
@@ -92,9 +101,17 @@ export function QuizPlay({
     }
 
     setCodeError("");
-    if (!(await loadGirlByToken(clean))) {
+    setOpening(true);
+    if (!(await activeDb.loginGirl(clean))) {
+      setOpening(false);
+      setShakeKey((k) => k + 1);
       setCodeError("Mã chưa đúng, bạn kiểm tra lại giúp mình nhé!");
+      return;
     }
+    // Let the seal break and the letter slide out before switching screens.
+    if (!reduceMotion) await new Promise((r) => setTimeout(r, 1300));
+    await loadGirlByToken(clean);
+    setOpening(false);
   }
 
   function handleResetQuiz() {
@@ -108,12 +125,34 @@ export function QuizPlay({
     setPickedKey(null);
   }
 
+  // Boys' code: replay a group from the start. Kept local; saveGirlProgress skips this account.
+  function startBoyTeam(team: string) {
+    const g = activeDb.getGirlByToken(girl!.token);
+    if (!g) return;
+    Object.assign(g, {
+      quiz_group: `Nhóm ${team}`,
+      current_question_index: 0,
+      wrong_attempts: 0,
+      stage: "not_started",
+      completed_at: undefined,
+    });
+    setGirl({ ...g });
+    setQuestions(activeDb.getQuestionsForGirl(g));
+    setCurrentIndex(0);
+    setFeedback("idle");
+    setPickedKey(null);
+    setShowWelcome(true);
+    setBoyTeam(team);
+  }
+
   function handleSwitchAccount() {
     if (typeof localStorage !== "undefined") {
       localStorage.removeItem("active_girl_token");
     }
     activeDb.notifyListeners();
     setGirl(null);
+    setBoyTeam("");
+    setShowAnswers(false);
     setInputCode("");
     setFeedback("idle");
     setPickedKey(null);
@@ -128,86 +167,180 @@ export function QuizPlay({
   }
 
   if (!girl) {
+    const ease = { duration: reduceMotion ? 0 : 0.6, ease: [0.4, 0, 0.2, 1] as const };
     return (
-      <main className="w-full min-h-screen bg-gradient-to-b from-[#FFF5F7] via-[#FDE8EF] to-[#F7D5DF] text-[#381A2B] flex flex-col items-center justify-center p-4 font-sans">
-        <div className="w-full max-w-[440px] rounded-3xl bg-[#FFFDFB] p-7 border border-pink-200/90 shadow-2xl text-center">
-          <div className="size-14 rounded-2xl bg-[#D94B76] text-white flex items-center justify-center text-xl mx-auto mb-3 font-serif font-bold shadow-sm">
+      <main className="w-full min-h-screen bg-gradient-to-b from-[#FFF5F7] via-[#FDE8EF] to-[#F7D5DF] text-[#381A2B] flex flex-col items-center justify-center px-4 pt-24 pb-10 font-sans">
+        <motion.div
+          key={shakeKey}
+          animate={shakeKey ? { x: [0, -10, 10, -6, 6, 0] } : undefined}
+          transition={{ duration: 0.4 }}
+          className="relative w-full max-w-[400px]"
+          style={{ perspective: 1200 }}
+        >
+          {/* Letter inside: slides up when the envelope opens */}
+          <motion.div
+            aria-hidden
+            animate={{ y: opening ? -110 : 0 }}
+            transition={{ ...ease, delay: reduceMotion ? 0 : 0.55 }}
+            className="absolute inset-x-5 top-4 h-52 rounded-t-xl bg-[#FFFDF9] border border-[#EBDCCF] shadow-sm px-6 pt-5 z-[5]"
+          >
+            <p className="font-serif text-lg text-[#431936]">Thư 20/10</p>
+            <div className="mt-3 space-y-2">
+              <div className="h-1.5 w-4/5 rounded-full bg-[#F1E4DA]" />
+              <div className="h-1.5 w-3/5 rounded-full bg-[#F1E4DA]" />
+              <div className="h-1.5 w-2/3 rounded-full bg-[#F1E4DA]" />
+            </div>
+          </motion.div>
+
+          {/* Back of the envelope */}
+          <div aria-hidden className="absolute inset-0 rounded-2xl bg-[#E6D2C1]" />
+
+          {/* Flap: folds back when opening */}
+          <motion.div
+            aria-hidden
+            initial={false}
+            animate={{ rotateX: opening ? 180 : 0, zIndex: opening ? 1 : 20 }}
+            transition={{ rotateX: ease, zIndex: { delay: reduceMotion ? 0 : 0.3 } }}
+            className="absolute inset-x-0 top-0 h-36 origin-top bg-[#EAD8C8] [clip-path:polygon(0_0,100%_0,50%_100%)] drop-shadow-sm"
+          />
+
+          {/* Wax seal on the flap tip */}
+          <motion.div
+            aria-hidden
+            animate={opening ? { scale: 1.25, opacity: 0, rotate: -20 } : { scale: 1, opacity: 1, rotate: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.35 }}
+            className="absolute left-1/2 top-36 -translate-x-1/2 -translate-y-1/2 z-30 size-16 rounded-full bg-[#C25953] text-white shadow-md ring-4 ring-[#C25953]/25 flex items-center justify-center font-serif font-bold text-sm"
+          >
             20/10
+          </motion.div>
+
+          {/* Front pocket with the form */}
+          <div className="relative z-10 rounded-2xl bg-[#F2E5D9] border border-[#E8D2C2] shadow-xl px-6 sm:px-8 pt-48 pb-7 text-center">
+            <div className="relative">
+              <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#B0566B]">Thử thách 20/10</p>
+              <h1 className="mt-1 text-2xl font-serif font-bold text-[#431936]">Gửi bạn nữ GDG-HUST</h1>
+              <p className="mt-2 text-xs text-[#826A73] leading-relaxed max-w-[280px] mx-auto">
+                Có một lá thư đang chờ bạn. Nhập mã riêng của bạn để mở thư và bắt đầu thử thách nhé.
+              </p>
+
+              <form onSubmit={handleLoginWithCode} className="mt-5 space-y-3">
+                <label htmlFor="girl-code" className="sr-only">
+                  Mã của bạn
+                </label>
+                <input
+                  id="girl-code"
+                  type="text"
+                  autoFocus
+                  required
+                  disabled={opening}
+                  value={inputCode}
+                  onChange={(e) => {
+                    setInputCode(e.target.value.toUpperCase());
+                    setCodeError("");
+                  }}
+                  placeholder="Mã của bạn"
+                  aria-invalid={Boolean(codeError)}
+                  aria-describedby={codeError ? "girl-code-error" : undefined}
+                  className="w-full h-12 px-4 rounded-xl border border-dashed border-[#C9A893] bg-[#FFFDF9]/80 font-mono uppercase tracking-[0.4em] text-center text-base text-[#431936] focus:outline-none focus:border-solid focus:border-[#C25953] placeholder:normal-case placeholder:tracking-normal placeholder:font-sans placeholder:text-sm placeholder:text-[#B8A194]"
+                />
+
+                {codeError && (
+                  <p id="girl-code-error" role="alert" className="text-xs text-rose-700 font-medium">
+                    {codeError}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={opening}
+                  className="w-full h-11 rounded-xl bg-[#C25953] hover:bg-[#A9473F] disabled:opacity-80 text-white font-semibold text-sm shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                >
+                  {opening ? "Đang mở thư…" : "Mở thư ✉"}
+                </button>
+              </form>
+
+              <p className="mt-4 text-[11px] font-serif italic text-[#9C8072]">Từ GDG on Campus HUST, với yêu thương</p>
+            </div>
+          </div>
+        </motion.div>
+      </main>
+    );
+  }
+
+  // Boys' code (girls.is_checker, set only in Supabase): pick any group's game, skip the countdown.
+  if (girl.is_checker && showAnswers) {
+    return <QuestionReview onExit={() => setShowAnswers(false)} />;
+  }
+  if (girl.is_checker && !boyTeam) {
+    return (
+      <main className="w-full min-h-screen bg-gradient-to-b from-[#FFF5F7] via-[#FDE8EF] to-[#F7D5DF] text-[#381A2B] flex items-center justify-center px-4 pt-28 pb-16">
+        <div className="w-full max-w-[460px] rounded-3xl bg-[#FFFDFB] p-7 border border-pink-200/90 shadow-2xl text-center">
+          <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#B4475A]">Dành cho bạn nam</p>
+          <h1 className="mt-1 text-2xl font-serif font-bold text-[#431936]">Chọn nhóm để chơi thử</h1>
+          <p className="mt-2 text-xs text-[#826A73]">Chơi thử không lưu tiến độ, chơi lại bao nhiêu lần cũng được.</p>
+
+          <div className="mt-5 grid grid-cols-3 sm:grid-cols-4 gap-2">
+            {Object.keys(TEAM_QUESTIONS).map((team) => (
+              <button
+                key={team}
+                type="button"
+                onClick={() => startBoyTeam(team)}
+                className="h-11 rounded-xl border border-pink-200 bg-white text-sm font-semibold text-[#B4475A] hover:bg-pink-50 cursor-pointer"
+              >
+                Nhóm {team}
+              </button>
+            ))}
           </div>
 
-          <span className="inline-block px-3 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-bold uppercase tracking-wider mb-1">
-            Thử Thách Minigame
-          </span>
-
-          <h1 className="text-2xl font-bold font-serif text-[#431936] mt-1">
-            Nhập Mã Tham Gia Thử Thách
-          </h1>
-          <p className="text-xs text-slate-500 mt-1.5 leading-relaxed max-w-xs mx-auto">
-            Nhập mã cá nhân để giải 5 câu hỏi minigame và mở gợi ý nhận quà từ các bạn nam trên cây.
-          </p>
-
-          <form onSubmit={handleLoginWithCode} className="mt-5 space-y-3">
-            {codeError && (
-              <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
-                {codeError}
-              </div>
-            )}
-
-            <div>
-              <input
-                type="text"
-                autoFocus
-                required
-                value={inputCode}
-                onChange={(e) => {
-                  setInputCode(e.target.value.toUpperCase());
-                  setCodeError("");
-                }}
-                placeholder="Nhập mã của bạn"
-                className="w-full h-11 px-4 rounded-xl border border-pink-200 bg-white font-mono uppercase tracking-widest text-center text-sm text-slate-800 focus:outline-none focus:border-pink-500 shadow-sm placeholder:normal-case placeholder:font-sans placeholder:text-slate-400"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full h-11 rounded-xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-bold text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+          <div className="mt-6 flex flex-col gap-2.5">
+            <Link
+              to="/boy"
+              search={{ token: girl.token, group: girl.group_id, view: "compose" }}
+              className="w-full h-11 rounded-xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-bold text-xs flex items-center justify-center no-underline"
             >
-              Vào Thử Thách →
+              Viết lời chúc lên cây →
+            </Link>
+            <button
+              type="button"
+              onClick={() => setShowAnswers(true)}
+              className="w-full h-11 rounded-xl border border-pink-200 text-[#B4475A] font-semibold text-xs hover:bg-pink-50 cursor-pointer"
+            >
+              Xem đáp án các nhóm
             </button>
-          </form>
+            <button type="button" onClick={handleSwitchAccount} className="mt-1 text-xs text-slate-500 hover:text-slate-700 cursor-pointer">
+              Đổi mã
+            </button>
+          </div>
         </div>
       </main>
     );
   }
 
-  if (!isOpen) {
+  if (!isOpen && !girl.is_checker) {
     return (
-      <main className="w-full min-h-screen bg-gradient-to-b from-[#FFF5F7] via-[#FDE8EF] to-[#F7D5DF] text-[#381A2B] flex flex-col items-center justify-center p-4 font-sans">
-        <div role="alert" className="w-full max-w-[440px] rounded-3xl bg-[#FFFDFB] p-7 border border-pink-200/90 shadow-2xl text-center">
-          <h1 className="text-xl font-bold font-serif text-[#431936]">
-            Xin lỗi, chưa đến ngày thực hiện 20/10 của GDG
-          </h1>
-          <p className="mt-4 text-xs text-[#826A73]">Gửi {girl.name},</p>
-          <p className="mt-2 text-base font-serif text-[#431936] leading-relaxed whitespace-pre-line">
-            Mặc dù vậy, GDG-HUST vẫn muốn gửi lời chúc sớm đến bạn: chúc bạn luôn xinh đẹp, rạng rỡ,
-            học tập thật tốt và luôn được yêu thương. Hẹn gặp bạn vào lúc 18:00 ngày 22/10/2026 để cùng
-            tham gia thử thách và mở những món quà bất ngờ mà các bạn nam đã chuẩn bị nhé!
-          </p>
-          <p className="mt-6 text-[10px] uppercase font-bold tracking-wider text-pink-700">
-            Mở cửa lúc 18:00 ngày 22/10/2026
-          </p>
-          <p className="mt-1 text-2xl font-mono font-bold text-[#D94B76] tabular-nums">
-            {formatCountdown(OPEN_AT - now)}
-          </p>
-          <button
-            type="button"
-            onClick={handleSwitchAccount}
-            className="mt-5 text-xs text-slate-500 hover:text-slate-700 cursor-pointer"
-          >
-            Đổi mã
-          </button>
-        </div>
-      </main>
+      <LetterSheet
+        to={girl.name}
+        title="Xin lỗi, chưa đến ngày thực hiện 20/10 của GDG"
+        footer={
+          <div role="status" className="text-center border-t border-dashed border-[#D9C7B0] pt-6">
+            <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#B4475A]">
+              Thư mở lúc 18:00 ngày 22/10/2026
+            </p>
+            <p className="mt-1 text-2xl font-mono font-bold text-[#B4475A] tabular-nums">
+              {formatCountdown(OPEN_AT - now)}
+            </p>
+            <button
+              type="button"
+              onClick={handleSwitchAccount}
+              className="mt-4 text-xs text-[#8C7464] hover:text-[#3A2230] underline underline-offset-4 cursor-pointer"
+            >
+              Đổi mã
+            </button>
+          </div>
+        }
+      >
+        {`Mặc dù vậy, GDG-HUST vẫn muốn gửi lời chúc sớm đến bạn: chúc bạn luôn xinh đẹp, rạng rỡ, học tập thật tốt và luôn được yêu thương. Hẹn gặp bạn vào lúc 18:00 ngày 22/10/2026 để cùng tham gia thử thách và mở những món quà bất ngờ mà các bạn nam đã chuẩn bị nhé!`}
+      </LetterSheet>
     );
   }
 

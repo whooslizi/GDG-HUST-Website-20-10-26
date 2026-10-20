@@ -155,6 +155,25 @@ const PUBLIC_GROUP_COLUMNS = "id, group_name, wish_message, created_at";
 const PUBLIC_BOY_COLUMNS =
   "id, group_id, name, description, personal_wish, ornament_type, gift_hint, has_written_wish, assigned_girl_name";
 
+declare const __DEMO_GIRL_CODE__: string | undefined; // set by vite.config.ts for npm run dev only
+
+// Local test girl for `npm run dev` (code = DEMO_GIRL_CODE in .env). Never in builds or Supabase.
+export function demoGirl(code: string): Girl | null {
+  const demoCode = typeof __DEMO_GIRL_CODE__ === "string" ? __DEMO_GIRL_CODE__ : "";
+  if (!demoCode || code.trim().toUpperCase() !== demoCode.toUpperCase()) return null;
+  return {
+    id: "girl_demo",
+    group_id: "grp_hust",
+    name: "Bạn Demo",
+    token: demoCode,
+    quiz_group: "Nhóm 1",
+    current_question_index: 0,
+    wrong_attempts: 0,
+    stage: "not_started",
+    welcome_wish: "Đây là lá thư thử nghiệm của GDG-HUST. Chúc bạn một ngày 20/10 thật rạng rỡ!",
+  };
+}
+
 // How many letters on the tree each girl can open. Girls are not told about the limit.
 export const OPENABLE_PER_GIRL = 3;
 
@@ -423,6 +442,11 @@ export class AppDatabaseService {
   public async loginGirl(token: string): Promise<Girl | null> {
     const clean = token.trim();
     if (!clean) return null;
+    const demo = demoGirl(clean);
+    if (demo) {
+      this.state.girls = [...this.state.girls.filter((g) => g.id !== demo.id), demo];
+      return demo;
+    }
     if (!this.isUsingSupabase()) return this.getGirlByToken(clean);
 
     const { data, error } = await supabase.client.rpc("girl_login", { p_token: clean });
@@ -441,7 +465,8 @@ export class AppDatabaseService {
   }
 
   private saveGirlProgress(girl: Girl): void {
-    if (!this.isUsingSupabase()) return;
+    // The shared boys' code replays groups freely; its progress is never stored.
+    if (!this.isUsingSupabase() || girl.is_checker) return;
     Promise.resolve(
       supabase.client.rpc("girl_save_progress", {
         p_token: girl.token,
@@ -716,7 +741,9 @@ export class AppDatabaseService {
 
     if (this.isUsingSupabase()) {
       const b = res.boy;
+      // Supabase only accepts the wish with the boys' code (supabase/secure.sql).
       const { error } = await supabase.client.rpc("submit_boy_wish", {
+        p_code: accessCode.trim(),
         p_group_id: b.group_id,
         p_name: b.name,
         p_secret_code: b.secret_code || "",
@@ -1239,7 +1266,7 @@ export class AppDatabaseService {
 }
 
 export const dbService = new AppDatabaseService({
-  storageKey: "bloom_2010_database_realtime_v1",
+  storageKey: "bloom_2010_database_realtime_v2",
   enableSupabase: true,
   isMemoryOnly: false,
 });

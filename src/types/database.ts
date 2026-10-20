@@ -51,6 +51,7 @@ export interface Girl {
   assigned_boy_name?: string;
   team?: string;
   quiz_group?: string; // "Nhóm 1".."Nhóm 7", picks quiz questions 4-5
+  is_checker?: boolean; // checker code: sees every group's answers instead of playing
   welcome_wish?: string;
 }
 

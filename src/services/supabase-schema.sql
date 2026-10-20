@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS girls (
   assigned_boy_name TEXT,
   team TEXT,
   quiz_group TEXT,
+  is_checker BOOLEAN DEFAULT false,
   welcome_wish TEXT
 );
 

@@ -21,7 +21,7 @@ export function SiteHeader() {
     return dbService.subscribe(() => setGirl(readActiveGirl()));
   }, [currentPath]);
   // Visitors only see the wish tree; girls see the challenge, plus the tree once done. Dashboard is URL-only.
-  const showTree = !girl || girl.stage === "completed";
+  const showTree = !girl || girl.stage === "completed" || Boolean(girl.is_checker);
 
   return (
     <header className="fixed top-3 sm:top-4 left-3 right-3 sm:left-6 sm:right-6 z-40 h-13 sm:h-14 flex items-center justify-between px-3.5 sm:px-6 rounded-full backdrop-blur-xl bg-[rgba(255,255,255,0.82)] border border-[rgba(255,255,255,0.9)] shadow-[0_12px_28px_-6px_rgba(136,73,90,0.12)]">
