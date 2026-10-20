@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
 // Handwritten 20/10 letter on cream paper with pressed flowers.
@@ -58,13 +58,85 @@ function Bouquet({ flip = false }: { flip?: boolean }) {
 interface LetterSheetProps {
   to: string;
   title?: string;
+  greeting?: string;
+  closing?: string;
   children: ReactNode;
   signature?: string;
   footer?: ReactNode;
+  // Hidden second page (easter egg): opened by the folded corner or by tapping the sheet behind.
+  pageTwo?: ReactNode;
 }
 
-export function LetterSheet({ to, title, children, signature = "GDG HUST", footer }: LetterSheetProps) {
+const PAPER_STYLE = {
+  color: INK,
+  backgroundImage: "radial-gradient(rgba(140,110,80,0.06) 1px, transparent 1px)",
+  backgroundSize: "4px 4px",
+};
+
+export function LetterSheet({
+  to,
+  title,
+  greeting,
+  closing = "Thương mến,",
+  children,
+  signature = "GDG HUST",
+  footer,
+  pageTwo,
+}: LetterSheetProps) {
   const reduceMotion = useReducedMotion();
+  const [page, setPage] = useState(1);
+  const turnTo = (n: number) => {
+    setPage(n);
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+  };
+  const name = to.trim() || "bạn";
+
+  const sheet = (n: number, content: ReactNode) => {
+    const front = page === n;
+    return (
+      <motion.article
+        key={n}
+        inert={!front}
+        onClick={front ? undefined : () => turnTo(n)}
+        initial={false}
+        animate={front ? { rotate: 0, x: 0, y: 0 } : { rotate: 3.5, x: 14, y: 10 }}
+        transition={{ duration: reduceMotion ? 0 : 0.45, ease: [0.4, 0, 0.2, 1] }}
+        className={`relative rounded-[3px] px-6 sm:px-11 pt-11 pb-12 ${front ? "shadow-2xl" : "shadow-lg cursor-pointer"}`}
+        style={{ ...PAPER_STYLE, gridArea: "1 / 1", zIndex: front ? 2 : 1, background: front ? PAPER : "#F3ECDD" }}
+      >
+        {front && (
+          <div aria-hidden className="absolute -top-3 left-1/2 -translate-x-1/2 w-28 h-7 rotate-[-3deg] opacity-80" style={{ background: "repeating-linear-gradient(45deg, #F3C5CF 0 8px, #F8DCE2 8px 16px)" }} />
+        )}
+        {/* The sheet behind shows as blank paper */}
+        <div className={`transition-opacity duration-300 ${front ? "opacity-100" : "opacity-0"}`}>{content}</div>
+        {front && (
+          <button
+            type="button"
+            onClick={() => turnTo(n === 1 ? 2 : 1)}
+            aria-label={n === 1 ? "Lật sang trang 2" : "Quay lại trang 1"}
+            title={n === 1 ? "Lật trang" : "Trang trước"}
+            className="group absolute bottom-0 right-0 size-12 cursor-pointer"
+          >
+            <span className="absolute inset-0 bg-[#E9DCC6] shadow-[-2px_-2px_4px_rgba(0,0,0,0.08)] [clip-path:polygon(100%_0,0_100%,0_0)] transition-transform group-hover:scale-110 origin-top-left" />
+            <span className="absolute inset-0 bg-[#F7EEDF] [clip-path:polygon(100%_0,100%_100%,0_100%)]" />
+          </button>
+        )}
+      </motion.article>
+    );
+  };
+
+  const pageOne = (
+    <>
+      <div className="relative font-hand text-[17px] sm:text-[18px] leading-[1.6]">
+        {title && <h1 className="mb-5 px-6 sm:px-10 text-center text-[21px] sm:text-[24px] leading-snug text-[#B4475A]">{title}</h1>}
+        <p>{greeting ?? `Gửi ${name},`}</p>
+        <div className="mt-4 whitespace-pre-line">{children}</div>
+        <p className="mt-6">{closing}</p>
+        <p className="font-script text-[28px] leading-tight text-[#B4475A]">{signature}</p>
+      </div>
+      {footer && <div className="relative mt-8 font-sans">{footer}</div>}
+    </>
+  );
 
   return (
     <main className="w-full min-h-screen bg-gradient-to-b from-[#FFF5F7] via-[#FDE8EF] to-[#F7D5DF] flex justify-center px-4 pt-28 pb-16 overflow-x-hidden">
@@ -72,36 +144,31 @@ export function LetterSheet({ to, title, children, signature = "GDG HUST", foote
         initial={reduceMotion ? false : { opacity: 0, y: 40, rotate: 0 }}
         animate={{ opacity: 1, y: 0, rotate: -1.2 }}
         transition={{ type: "spring", damping: 20, stiffness: 140 }}
-        className="relative w-full max-w-[620px] h-fit"
+        className="relative w-full max-w-[560px] h-fit grid"
       >
-        {/* Second sheet peeking out behind */}
-        <div aria-hidden className="absolute inset-0 rounded-[3px] shadow-lg" style={{ background: "#F3ECDD", transform: "rotate(3deg) translate(10px, 6px)" }} />
+        {pageTwo ? (
+          <>
+            {sheet(1, pageOne)}
+            {sheet(
+              2,
+              <div className="relative font-hand text-[17px] sm:text-[18px] leading-[1.6] whitespace-pre-line">
+                {pageTwo}
+                <p className="mt-6 font-script text-[26px] leading-tight text-[#B4475A]">{signature}</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div aria-hidden className="rounded-[3px] shadow-lg" style={{ gridArea: "1 / 1", background: "#F3ECDD", transform: "rotate(3deg) translate(10px, 6px)" }} />
+            <article className="relative rounded-[3px] shadow-2xl px-6 sm:px-11 pt-11 pb-10" style={{ ...PAPER_STYLE, gridArea: "1 / 1", background: PAPER }}>
+              <div aria-hidden className="absolute -top-3 left-1/2 -translate-x-1/2 w-28 h-7 rotate-[-3deg] opacity-80" style={{ background: "repeating-linear-gradient(45deg, #F3C5CF 0 8px, #F8DCE2 8px 16px)" }} />
+              {pageOne}
+            </article>
+          </>
+        )}
 
-        <article
-          className="relative rounded-[3px] shadow-2xl px-7 sm:px-14 pt-14 pb-12"
-          style={{
-            background: PAPER,
-            color: INK,
-            backgroundImage: "radial-gradient(rgba(140,110,80,0.06) 1px, transparent 1px)",
-            backgroundSize: "4px 4px",
-          }}
-        >
-          {/* Washi tape */}
-          <div aria-hidden className="absolute -top-3 left-1/2 -translate-x-1/2 w-28 h-7 rotate-[-3deg] opacity-80" style={{ background: "repeating-linear-gradient(45deg, #F3C5CF 0 8px, #F8DCE2 8px 16px)" }} />
-
-          <div className="absolute -top-10 -right-8 sm:-right-12"><Bouquet /></div>
-          <div className="absolute -bottom-10 -left-8 sm:-left-12"><Bouquet flip /></div>
-
-          <div className="relative font-hand text-[21px] sm:text-[23px] leading-[1.75]">
-            {title && <h1 className="mb-6 text-center text-[26px] sm:text-[30px] leading-snug text-[#B4475A]">{title}</h1>}
-            <p>Gửi {to.trim() || "bạn"},</p>
-            <div className="mt-5 whitespace-pre-line">{children}</div>
-            <p className="mt-8">Thương mến,</p>
-            <p className="font-script text-[34px] leading-tight text-[#B4475A]">{signature}</p>
-          </div>
-
-          {footer && <div className="relative mt-8 font-sans">{footer}</div>}
-        </article>
+        <div className="absolute -top-10 -right-8 sm:-right-12 z-10 pointer-events-none"><Bouquet /></div>
+        <div className="absolute -bottom-10 -left-8 sm:-left-12 z-10 pointer-events-none"><Bouquet flip /></div>
       </motion.div>
     </main>
   );
