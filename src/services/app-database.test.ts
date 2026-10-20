@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { AppDatabaseService } from "./app-database.ts";
+import { AppDatabaseService, TEAM_QUESTIONS, isCorrectAnswer } from "./app-database.ts";
 
 test("AppDatabaseService initializes with default groups and girls", () => {
   const db = new AppDatabaseService({
@@ -98,7 +98,10 @@ test("each team gets its own questions 4-5 with correct answers", () => {
   const girl = db.getOrCreateGirl("team_token");
   const answer = (team: string) => {
     girl.quiz_group = team;
-    return db.getQuestionsForGirl(girl).slice(3).map((q) => q.options.find((o) => o.key === q.correct_key)!.label);
+    return db.getQuestionsForGirl(girl).slice(3).map((q) => {
+      assert.equal(q.question_type, "text", "questions 4-5 are typed");
+      return q.answer!;
+    });
   };
   // Decode the shift puzzles independently so a typo in the data shows up here.
   const shift = (nums: number[], k: number) => nums.map((n) => String.fromCharCode(64 + n + k)).join("");
@@ -112,4 +115,11 @@ test("each team gets its own questions 4-5 with correct answers", () => {
   assert.deepEqual(answer("1"), ["PYTHON", "GDGHUST2025"]);
   girl.quiz_group = undefined;
   assert.equal(db.getQuestionsForGirl(girl)[3].id, "t1_q_4");
+});
+
+test("typed answers ignore case and spaces", () => {
+  const q = TEAM_QUESTIONS["5"][4]; // GDG HUST
+  for (const ok of ["GDG HUST", "gdg hust", "GDGHUST", "  gdg  hust "]) assert.equal(isCorrectAnswer(q, ok), true, ok);
+  for (const bad of ["GDG", "GDG HUS", ""]) assert.equal(isCorrectAnswer(q, bad), false, bad);
+  assert.equal(isCorrectAnswer(TEAM_QUESTIONS["1"][0], "c"), true, "multiple choice still uses the option key");
 });

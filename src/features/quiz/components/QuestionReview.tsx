@@ -9,6 +9,11 @@ function QuestionCard({ q, n }: { q: Question; n: number }) {
       <p className="text-sm text-[#431936]">
         <span className="font-bold text-[#B4475A]">Câu {n}.</span> {q.text}
       </p>
+      {q.question_type === "text" ? (
+        <p className="mt-3 px-3 py-2 rounded-lg border bg-emerald-50 border-emerald-300 text-emerald-800 font-semibold text-xs">
+          Gõ đáp án: <span className="font-mono tracking-wider">{q.answer}</span> ✓
+        </p>
+      ) : (
       <ul className="mt-3 grid gap-1.5 sm:grid-cols-2 text-xs">
         {q.options.map((o) => {
           const correct = o.key === q.correct_key;
@@ -24,6 +29,7 @@ function QuestionCard({ q, n }: { q: Question; n: number }) {
           );
         })}
       </ul>
+      )}
       <p className="mt-2 text-[11px] text-[#826A73]">{q.clue}</p>
     </li>
   );

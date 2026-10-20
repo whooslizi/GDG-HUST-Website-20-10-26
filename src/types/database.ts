@@ -56,7 +56,7 @@ export interface Girl {
 }
 
 export type OptionKey = "a" | "b" | "c" | "d";
-export type QuestionType = "multiple_choice" | "boolean";
+export type QuestionType = "multiple_choice" | "boolean" | "text";
 
 export interface Question {
   id: string;
@@ -69,6 +69,7 @@ export interface Question {
     label: string;
   }[];
   correct_key: OptionKey;
+  answer?: string; // question_type "text": what she must type (case and spaces ignored)
   clue: string;
 }
 

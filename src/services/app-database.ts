@@ -102,6 +102,30 @@ function mc(id: string, n: number, text: string, labels: string[], correct: Opti
   };
 }
 
+// Typed-answer question: no options, she types the answer (see isCorrectAnswer).
+function typed(id: string, n: number, text: string, answer: string): Question {
+  return {
+    id,
+    group_id: "grp_hust",
+    question_type: "text",
+    text,
+    options: [],
+    correct_key: "a", // unused for typed questions
+    answer,
+    clue: `Nhận kí tự: ${CLUES[n - 1]}`,
+  };
+}
+
+// Case and spaces don't matter: "gdg hust" == "GDGHUST".
+export function normalizeAnswer(value: string): string {
+  return value.toUpperCase().replace(/\s+/g, "");
+}
+
+export function isCorrectAnswer(q: Question, given: string): boolean {
+  if (q.question_type === "text") return normalizeAnswer(given) === normalizeAnswer(q.answer ?? "");
+  return q.correct_key === given;
+}
+
 const COMMON_QUESTIONS: Question[] = [
   mc("q_1", 1, "Câu lạc bộ GDG-HUST chính thức được thành lập vào năm nào?", ["2018", "2019", "2020", "2021"], "c"),
   mc("q_2", 2, "Sự kiện thường niên nổi bật nhất do GDG-HUST tổ chức là gì?", ["Hackathon", "CodeCamp", "TechDay", "DevFest"], "a"),
@@ -112,38 +136,38 @@ const COMMON_QUESTIONS: Question[] = [
 export const TEAM_QUESTIONS: Record<string, Question[]> = {
   "1": [
     ...COMMON_QUESTIONS,
-    mc("t1_q_4", 4, "Cho phương trình: 2x + 6 = 10. Tính x. Dãy số sau đã bị cộng thêm x đơn vị: 18, 27, 22, 10, 17, 16. Giải phương trình và giải mã thông điệp.", ["PASCAL", "PYTHON", "PYTORCH", "PHOTON"], "b"),
-    mc("t1_q_5", 5, "Giải mã chuỗi mật mã dạng Base64 sau để tìm từ khóa bí ẩn: R0RHSFVTVDIwMjU=", ["GDGHUST2024", "GDGOCHUST", "GDGHUST2025", "HUSTGDG2025"], "c"),
+    typed("t1_q_4", 4, "Cho phương trình: 2x + 6 = 10. Tính x. Dãy số sau đã bị cộng thêm x đơn vị: 18, 27, 22, 10, 17, 16. Giải phương trình và giải mã thông điệp.", "PYTHON"),
+    typed("t1_q_5", 5, "Giải mã chuỗi mật mã dạng Base64 sau để tìm từ khóa bí ẩn: R0RHSFVTVDIwMjU=", "GDGHUST2025"),
   ],
   "2": [
     ...COMMON_QUESTIONS,
-    mc("t2_q_4", 4, "Cho phương trình x^2 - 9 = 0 (x > 0). Dãy số sau đã bị trừ đi x: 0, 5, 15, 12, 10, 2. Giải mã thông điệp.", ["CHROME", "CHARGE", "CHOOSE", "CLOSED"], "a"),
-    mc("t2_q_5", 5, "Giải mã chuỗi số ở hệ cơ số 16 (Hexadecimal) sau sang dạng văn bản ASCII: 47 44 47 48 55 53 54", ["GDGHUTS", "GDGOHUST", "HUSTGDG", "GDGHUST"], "d"),
+    typed("t2_q_4", 4, "Cho phương trình x^2 - 9 = 0 (x > 0). Dãy số sau đã bị trừ đi x: 0, 5, 15, 12, 10, 2. Giải mã thông điệp.", "CHROME"),
+    typed("t2_q_5", 5, "Giải mã chuỗi số ở hệ cơ số 16 (Hexadecimal) sau sang dạng văn bản ASCII: 47 44 47 48 55 53 54", "GDGHUST"),
   ],
   "3": [
     ...COMMON_QUESTIONS,
-    mc("t3_q_4", 4, "Tính biểu thức k = 15 - 3 × 4. Dãy số sau đã bị cộng thêm k: 7, 4, 23, 4. Giải mã thông điệp.", ["DART", "DATA", "JAVA", "GATE"], "b"),
-    mc("t3_q_5", 5, "Giải mã chuỗi thuật toán xoay 13 vị trí (ROT13): TQTUHFG", ["GDGHUST", "GDGOHUS", "HUSTGDG", "GDHGUST"], "a"),
+    typed("t3_q_4", 4, "Tính biểu thức k = 15 - 3 × 4. Dãy số sau đã bị cộng thêm k: 7, 4, 23, 4. Giải mã thông điệp.", "DATA"),
+    typed("t3_q_5", 5, "Giải mã chuỗi thuật toán xoay 13 vị trí (ROT13): TQTUHFG", "GDGHUST"),
   ],
   "4": [
     ...COMMON_QUESTIONS,
-    mc("t4_q_4", 4, "Cho biểu thức: x = √16 + 1. Dãy số sau đã bị trừ đi x: 8, -4, 15, -2, 3. Tìm x và giải mã thông điệp.", ["MARCH", "WATCH", "MATCH", "MACRO"], "c"),
-    mc("t4_q_5", 5, "Giải mã chuỗi mã Nhị phân (Binary) 8-bit sau sang chữ cái: 01000111 01000100 01000111", ["GDE", "DGD", "GGD", "GDG"], "d"),
+    typed("t4_q_4", 4, "Cho biểu thức: x = √16 + 1. Dãy số sau đã bị trừ đi x: 8, -4, 15, -2, 3. Tìm x và giải mã thông điệp.", "MATCH"),
+    typed("t4_q_5", 5, "Giải mã chuỗi mã Nhị phân (Binary) 8-bit sau sang chữ cái: 01000111 01000100 01000111", "GDG"),
   ],
   "5": [
     ...COMMON_QUESTIONS,
-    mc("t5_q_4", 4, "Cho phương trình: 3x - 5 = 10. Tính x. Dãy số mã hóa (cộng thêm x): 16, 10, 30, 7, 20, 6, 23, 9. Hãy tìm x và giải mã.", ["KEYBOARD", "KEYWORDS", "KEYCHAIN", "BILLBOARD"], "a"),
-    mc("t5_q_5", 5, "Giải mã chuỗi mã Morse sau: --. -.. --. / .... ..- ... -", ["GDG HUTS", "GDG HUST", "GDE HUST", "DGD HUST"], "b"),
+    typed("t5_q_4", 4, "Cho phương trình: 3x - 5 = 10. Tính x. Dãy số mã hóa (cộng thêm x): 16, 10, 30, 7, 20, 6, 23, 9. Hãy tìm x và giải mã.", "KEYBOARD"),
+    typed("t5_q_5", 5, "Giải mã chuỗi mã Morse sau: --. -.. --. / .... ..- ... -", "GDG HUST"),
   ],
   "6": [
     ...COMMON_QUESTIONS,
-    mc("t6_q_4", 4, "Cho phép tính: x = 10 - √36. Dãy số mã hóa (trừ đi x): -1, 11, 0, 5, 10, 3. Hãy tìm x và giải mã thông điệp.", ["CODING", "CODERS", "COOKIE", "CORING"], "a"),
-    mc("t6_q_5", 5, "Giải mã chuỗi zích-zắc (Rail Fence Cipher - 2 dòng): Dòng 1: G G U T — Dòng 2: D H S", ["GGUTDHS", "GDGHUST", "GDGUHST", "HUSTGDG"], "b"),
+    typed("t6_q_4", 4, "Cho phép tính: x = 10 - √36. Dãy số mã hóa (trừ đi x): -1, 11, 0, 5, 10, 3. Hãy tìm x và giải mã thông điệp.", "CODING"),
+    typed("t6_q_5", 5, "Giải mã chuỗi zích-zắc (Rail Fence Cipher - 2 dòng): Dòng 1: G G U T — Dòng 2: D H S", "GDGHUST"),
   ],
   "7": [
     ...COMMON_QUESTIONS,
-    mc("t7_q_4", 4, "Cho phép tính: x = 2^3 - 5. Dãy số sau đã bị trừ đi x: 8, 2, 22, 20, 12, 15, 1. Tìm x và giải mã thông điệp.", ["KEYCODE", "KEYWORD", "KEYNOTE", "KEYPORT"], "b"),
-    mc("t7_q_5", 5, "Giải mật mã Vigenère với bản mã là QHE và từ khóa (Key) là KEY:", ["GDG", "GHG", "DGD", "HUS"], "a"),
+    typed("t7_q_4", 4, "Cho phép tính: x = 2^3 - 5. Dãy số sau đã bị trừ đi x: 8, 2, 22, 20, 12, 15, 1. Tìm x và giải mã thông điệp.", "KEYWORD"),
+    typed("t7_q_5", 5, "Giải mật mã Vigenère với bản mã là QHE và từ khóa (Key) là KEY:", "GDG"),
   ],
 };
 
@@ -540,7 +564,7 @@ export class AppDatabaseService {
   public submitQuizAnswer(
     token: string,
     questionIndex: number,
-    pickedKey: OptionKey
+    picked: string // option key, or the typed answer for "text" questions
   ): {
     correct: boolean;
     wrong_attempts: number;
@@ -561,7 +585,7 @@ export class AppDatabaseService {
       throw new Error("Không tìm thấy câu hỏi này");
     }
 
-    const isCorrect = question.correct_key === pickedKey;
+    const isCorrect = isCorrectAnswer(question, picked);
 
     if (isCorrect) {
       const nextIndex = questionIndex + 1;

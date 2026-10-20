@@ -30,6 +30,7 @@ export function QuizPlay({
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [pickedKey, setPickedKey] = useState<OptionKey | null>(null);
+  const [typedAnswer, setTypedAnswer] = useState("");
   const [feedback, setFeedback] = useState<"idle" | "wrong_1" | "wrong_2_reveal" | "correct">("idle");
   const [loading, setLoading] = useState(true);
   const [inputCode, setInputCode] = useState("");
@@ -440,14 +441,24 @@ Khi bạn đến nơi, hãy mở lại lá thư này nhé: trò chơi sẽ chín
   function handlePickOption(key: OptionKey) {
     if (feedback === "correct" || feedback === "wrong_2_reveal") return;
     setPickedKey(key);
+    submitAnswer(key);
+  }
 
-    const result = activeDb.submitQuizAnswer(girl!.token, currentIndex, key);
+  function handleTypedSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (feedback === "correct" || feedback === "wrong_2_reveal" || !typedAnswer.trim()) return;
+    submitAnswer(typedAnswer);
+  }
+
+  function submitAnswer(answer: string) {
+    const result = activeDb.submitQuizAnswer(girl!.token, currentIndex, answer);
     setGirl(result.girl);
 
     if (result.correct) {
       setFeedback("correct");
       setTimeout(() => {
         setPickedKey(null);
+        setTypedAnswer("");
         setFeedback("idle");
         setCurrentIndex(result.nextIndex);
         if (result.completed) goToTree(result.girl);
@@ -467,6 +478,7 @@ Khi bạn đến nơi, hãy mở lại lá thư này nhé: trò chơi sẽ chín
     const result = activeDb.advanceAfterReveal(girl!.token, currentIndex);
     setGirl(result.girl);
     setPickedKey(null);
+    setTypedAnswer("");
     setFeedback("idle");
     setCurrentIndex(result.nextIndex);
     if (result.completed) goToTree(result.girl);
@@ -509,6 +521,45 @@ Khi bạn đến nơi, hãy mở lại lá thư này nhé: trò chơi sẽ chín
           {currentQuestion?.text}
         </h2>
 
+        {currentQuestion?.question_type === "text" ? (
+          <form onSubmit={handleTypedSubmit} className="mt-5 space-y-2.5">
+            <label htmlFor="typed-answer" className="sr-only">
+              Câu trả lời của bạn
+            </label>
+            <input
+              id="typed-answer"
+              key={currentQuestion.id}
+              type="text"
+              autoFocus
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="characters"
+              spellCheck={false}
+              disabled={feedback === "correct" || feedback === "wrong_2_reveal"}
+              value={typedAnswer}
+              onChange={(e) => {
+                setTypedAnswer(e.target.value.toUpperCase());
+                if (feedback === "wrong_1") setFeedback("idle");
+              }}
+              placeholder="Nhập câu trả lời"
+              aria-invalid={feedback === "wrong_1"}
+              className={`w-full h-12 px-4 rounded-2xl border bg-white font-mono uppercase tracking-[0.25em] text-center text-base text-[#381A2B] focus:outline-none placeholder:normal-case placeholder:tracking-normal placeholder:font-sans placeholder:text-sm placeholder:text-slate-400 ${
+                feedback === "correct"
+                  ? "border-emerald-400 bg-emerald-50"
+                  : feedback === "wrong_1"
+                    ? "border-red-400 bg-red-50 animate-shake"
+                    : "border-pink-200 focus:border-pink-500"
+              }`}
+            />
+            <button
+              type="submit"
+              disabled={!typedAnswer.trim() || feedback === "correct" || feedback === "wrong_2_reveal"}
+              className="w-full h-11 rounded-xl bg-[#D94B76] hover:bg-[#C23D66] disabled:opacity-50 text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
+            >
+              Trả lời
+            </button>
+          </form>
+        ) : (
         <div className="mt-5 space-y-2.5">
           {currentQuestion?.options.map((option) => {
             const isPicked = pickedKey === option.key;
@@ -548,6 +599,7 @@ Khi bạn đến nơi, hãy mở lại lá thư này nhé: trò chơi sẽ chín
             );
           })}
         </div>
+        )}
 
         {feedback === "wrong_1" && (
           <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
@@ -560,8 +612,11 @@ Khi bạn đến nơi, hãy mở lại lá thư này nhé: trò chơi sẽ chín
             <p className="leading-relaxed">
               Bạn chưa trả lời chính xác sau 2 lần thử. Đáp án đúng là:{" "}
               <strong>
-                {currentQuestion?.correct_key.toUpperCase()}.{" "}
-                {currentQuestion?.options.find((o) => o.key.toLowerCase() === currentQuestion.correct_key.toLowerCase())?.label}
+                {currentQuestion?.question_type === "text"
+                  ? currentQuestion.answer
+                  : `${currentQuestion?.correct_key.toUpperCase()}. ${
+                      currentQuestion?.options.find((o) => o.key.toLowerCase() === currentQuestion.correct_key.toLowerCase())?.label
+                    }`}
               </strong>
             </p>
             {currentQuestion?.clue && (
