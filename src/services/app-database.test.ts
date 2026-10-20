@@ -105,21 +105,21 @@ test("each team gets its own questions 4-5 with correct answers", () => {
   };
   // Decode the shift puzzles independently so a typo in the data shows up here.
   const shift = (nums: number[], k: number) => nums.map((n) => String.fromCharCode(64 + n + k)).join("");
-  assert.deepEqual(answer("Nhóm 1"), [shift([18, 27, 22, 10, 17, 16], -2), atob("R0RHSFVTVDIwMjU=")]);
-  assert.deepEqual(answer("2"), [shift([0, 5, 15, 12, 10, 2], 3), "GDGHUST"]);
-  assert.deepEqual(answer("3"), [shift([7, 4, 23, 4], -3), "GDGHUST"]);
-  assert.deepEqual(answer("4"), [shift([8, -4, 15, -2, 3], 5), "GDG"]);
-  assert.deepEqual(answer("5"), [shift([16, 10, 30, 7, 20, 6, 23, 9], -5), "GDG HUST"]);
-  assert.deepEqual(answer("6"), [shift([-1, 11, 0, 5, 10, 3], 4), "GDGHUST"]);
-  assert.deepEqual(answer("7"), [shift([8, 2, 22, 20, 12, 15, 1], 3), "GDG"]);
-  assert.deepEqual(answer("1"), ["PYTHON", "GDGHUST2025"]);
+  assert.deepEqual(answer("Nhóm 1"), [shift([18, 27, 22, 10, 17, 16], -2), "BLOOMAZING"]);
+  assert.deepEqual(answer("2"), [shift([0, 5, 15, 12, 10, 2], 3), "BLOOMAZING"]);
+  assert.deepEqual(answer("3"), [shift([7, 4, 23, 4], -3), "BLOOMAZING"]);
+  assert.deepEqual(answer("4"), [shift([8, -4, 15, -2, 3], 5), "BLOOMAZING"]);
+  assert.deepEqual(answer("5"), [shift([16, 10, 30, 7, 20, 6, 23, 9], -5), "BLOOMAZING"]);
+  assert.deepEqual(answer("6"), [shift([-1, 11, 0, 5, 10, 3], 4), "BLOOMAZING"]);
+  assert.deepEqual(answer("7"), [shift([8, 2, 22, 20, 12, 15, 1], 3), "BLOOMAZING"]);
+  assert.deepEqual(answer("1"), ["PYTHON", "BLOOMAZING"]);
   girl.quiz_group = undefined;
   assert.equal(db.getQuestionsForGirl(girl)[3].id, "t1_q_4");
 });
 
 test("typed answers ignore case and spaces", () => {
-  const q = TEAM_QUESTIONS["5"][4]; // GDG HUST
-  for (const ok of ["GDG HUST", "gdg hust", "GDGHUST", "  gdg  hust "]) assert.equal(isCorrectAnswer(q, ok), true, ok);
-  for (const bad of ["GDG", "GDG HUS", ""]) assert.equal(isCorrectAnswer(q, bad), false, bad);
+  const q = TEAM_QUESTIONS["5"][4]; // BLOOMAZING
+  for (const ok of ["BLOOMAZING", "bloomazing", "BLOOM AZING", "  bloom  azing "]) assert.equal(isCorrectAnswer(q, ok), true, ok);
+  for (const bad of ["BLOOM", "BLOOMAZIN", ""]) assert.equal(isCorrectAnswer(q, bad), false, bad);
   assert.equal(isCorrectAnswer(TEAM_QUESTIONS["1"][0], "c"), true, "multiple choice still uses the option key");
 });

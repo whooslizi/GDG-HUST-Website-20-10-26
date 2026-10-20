@@ -132,42 +132,47 @@ const COMMON_QUESTIONS: Question[] = [
   mc("q_3", 3, "Trang phục truyền thống của người con gái Việt Nam là gì?", ["Áo tứ thân", "Áo bà ba", "Áo dài", "Áo nhật bình"], "c"),
 ];
 
+// Question 5 is the same for every group.
+const Q5_TEXT =
+  "Trong khoa học máy tính, mỗi ký tự chữ cái đều được định danh bằng một mã số ASCII (hệ thập phân). Biết chữ A = 65, hãy giải mã dãy số sau để tìm ra từ ghép bí ẩn gửi tặng những cô gái tuyệt vời: 66 - 76 - 79 - 79 - 77 - 65 - 90 - 73 - 78 - 71 (Gợi ý: Nhập đáp án bằng tiếng Anh viết hoa, không dấu cách).";
+const q5 = (id: string) => typed(id, 5, Q5_TEXT, "BLOOMAZING");
+
 // Questions 4–5 differ per group ("Nhóm 1".."Nhóm 7"); picked from girl.quiz_group.
 export const TEAM_QUESTIONS: Record<string, Question[]> = {
   "1": [
     ...COMMON_QUESTIONS,
     typed("t1_q_4", 4, "Cho phương trình: 2x + 6 = 10. Tính x. Dãy số sau đã bị cộng thêm x đơn vị: 18, 27, 22, 10, 17, 16. Giải phương trình và giải mã thông điệp.", "PYTHON"),
-    typed("t1_q_5", 5, "Giải mã chuỗi mật mã dạng Base64 sau để tìm từ khóa bí ẩn: R0RHSFVTVDIwMjU=", "GDGHUST2025"),
+    q5("t1_q_5"),
   ],
   "2": [
     ...COMMON_QUESTIONS,
     typed("t2_q_4", 4, "Cho phương trình x^2 - 9 = 0 (x > 0). Dãy số sau đã bị trừ đi x: 0, 5, 15, 12, 10, 2. Giải mã thông điệp.", "CHROME"),
-    typed("t2_q_5", 5, "Giải mã chuỗi số ở hệ cơ số 16 (Hexadecimal) sau sang dạng văn bản ASCII: 47 44 47 48 55 53 54", "GDGHUST"),
+    q5("t2_q_5"),
   ],
   "3": [
     ...COMMON_QUESTIONS,
     typed("t3_q_4", 4, "Tính biểu thức k = 15 - 3 × 4. Dãy số sau đã bị cộng thêm k: 7, 4, 23, 4. Giải mã thông điệp.", "DATA"),
-    typed("t3_q_5", 5, "Giải mã chuỗi thuật toán xoay 13 vị trí (ROT13): TQTUHFG", "GDGHUST"),
+    q5("t3_q_5"),
   ],
   "4": [
     ...COMMON_QUESTIONS,
     typed("t4_q_4", 4, "Cho biểu thức: x = √16 + 1. Dãy số sau đã bị trừ đi x: 8, -4, 15, -2, 3. Tìm x và giải mã thông điệp.", "MATCH"),
-    typed("t4_q_5", 5, "Giải mã chuỗi mã Nhị phân (Binary) 8-bit sau sang chữ cái: 01000111 01000100 01000111", "GDG"),
+    q5("t4_q_5"),
   ],
   "5": [
     ...COMMON_QUESTIONS,
     typed("t5_q_4", 4, "Cho phương trình: 3x - 5 = 10. Tính x. Dãy số mã hóa (cộng thêm x): 16, 10, 30, 7, 20, 6, 23, 9. Hãy tìm x và giải mã.", "KEYBOARD"),
-    typed("t5_q_5", 5, "Giải mã chuỗi mã Morse sau: --. -.. --. / .... ..- ... -", "GDG HUST"),
+    q5("t5_q_5"),
   ],
   "6": [
     ...COMMON_QUESTIONS,
     typed("t6_q_4", 4, "Cho phép tính: x = 10 - √36. Dãy số mã hóa (trừ đi x): -1, 11, 0, 5, 10, 3. Hãy tìm x và giải mã thông điệp.", "CODING"),
-    typed("t6_q_5", 5, "Giải mã chuỗi zích-zắc (Rail Fence Cipher - 2 dòng): Dòng 1: G G U T — Dòng 2: D H S", "GDGHUST"),
+    q5("t6_q_5"),
   ],
   "7": [
     ...COMMON_QUESTIONS,
     typed("t7_q_4", 4, "Cho phép tính: x = 2^3 - 5. Dãy số sau đã bị trừ đi x: 8, 2, 22, 20, 12, 15, 1. Tìm x và giải mã thông điệp.", "KEYWORD"),
-    typed("t7_q_5", 5, "Giải mật mã Vigenère với bản mã là QHE và từ khóa (Key) là KEY:", "GDG"),
+    q5("t7_q_5"),
   ],
 };
 
