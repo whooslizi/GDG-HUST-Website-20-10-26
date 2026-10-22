@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BoyRouteImport } from './routes/boy'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as PlayRouteImport } from './routes/play'
-import { Route as ThanksRouteImport } from './routes/thanks'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -35,25 +34,18 @@ const PlayRoute = PlayRouteImport.update({
   path: '/play',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ThanksRoute = ThanksRouteImport.update({
-  id: '/thanks',
-  path: '/thanks',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/boy': typeof BoyRoute
   '/dashboard': typeof DashboardRoute
   '/play': typeof PlayRoute
-  '/thanks': typeof ThanksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/boy': typeof BoyRoute
   '/dashboard': typeof DashboardRoute
   '/play': typeof PlayRoute
-  '/thanks': typeof ThanksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,14 +53,13 @@ export interface FileRoutesById {
   '/boy': typeof BoyRoute
   '/dashboard': typeof DashboardRoute
   '/play': typeof PlayRoute
-  '/thanks': typeof ThanksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/boy' | '/dashboard' | '/play' | '/thanks'
+  fullPaths: '/' | '/boy' | '/dashboard' | '/play'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/boy' | '/dashboard' | '/play' | '/thanks'
-  id: '__root__' | '/' | '/boy' | '/dashboard' | '/play' | '/thanks'
+  to: '/' | '/boy' | '/dashboard' | '/play'
+  id: '__root__' | '/' | '/boy' | '/dashboard' | '/play'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,7 +67,6 @@ export interface RootRouteChildren {
   BoyRoute: typeof BoyRoute
   DashboardRoute: typeof DashboardRoute
   PlayRoute: typeof PlayRoute
-  ThanksRoute: typeof ThanksRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -109,13 +99,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/thanks': {
-      id: '/thanks'
-      path: '/thanks'
-      fullPath: '/thanks'
-      preLoaderRoute: typeof ThanksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -124,7 +107,6 @@ const rootRouteChildren: RootRouteChildren = {
   BoyRoute: BoyRoute,
   DashboardRoute: DashboardRoute,
   PlayRoute: PlayRoute,
-  ThanksRoute: ThanksRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,4 +1,4 @@
-// The 20/10 invitation letter, shown in the challenge and again behind the thank-you letter.
+// Letters on the girls' page: the thank-you letter on top, the 20/10 invitation behind it.
 
 export const INVITE_TITLE = "Thư mời tham dự Ngày Phụ nữ Việt Nam 20/10 của GDG-HUST";
 
@@ -21,3 +21,15 @@ Tinh mắt như bạn thì chắc chắn thử thách tối thứ Năm sẽ ch�
 – Và quan trọng nhất: mang theo nụ cười thật tươi, vì đó là điều mà cả GDG-HUST mong chờ nhất trong tối hôm ấy.
 
 Trang thư này là bí mật nho nhỏ giữa bạn và chúng mình thôi, đừng kể cho ai nghe nha!`;
+
+export const THANKS_TITLE = "Thư cảm ơn";
+
+export const THANKS = `Cảm ơn bạn đã dành thời gian tham dự buổi tiệc mừng Ngày Phụ nữ Việt Nam 20/10 của GDG-HUST. Sự có mặt của bạn chính là món quà lớn nhất mà chúng mình nhận được trong tối hôm ấy.
+
+Dù bạn là người ngày ngày gõ những dòng code, hay là người lo từng tấm poster, từng buổi sự kiện, từng con số trong bảng kế hoạch, thì ở GDG-HUST, mỗi người đều là một mảnh ghép không thể thay thế. Chính sự tỉ mỉ, sáng tạo và nụ cười của các bạn đã làm cho gia đình này ấm áp hơn mỗi ngày.
+
+Mong rằng những trò chơi nho nhỏ, những món quà bất ngờ và những lời chúc trên cây ước nguyện đã mang lại cho bạn thật nhiều niềm vui. Nếu có điều gì chưa trọn vẹn, chúng mình xin hứa sẽ làm tốt hơn trong những lần tới.
+
+Chúc bạn luôn xinh đẹp, rạng rỡ và khỏe mạnh; học tập, làm việc thật hiệu quả; và luôn giữ được ngọn lửa đam mê với những điều mình yêu thích. Hãy nhớ rằng, dù có bận rộn đến đâu, GDG-HUST vẫn luôn ở đây, sẵn sàng cùng bạn học hỏi, sáng tạo và lớn lên mỗi ngày.
+
+Hẹn gặp lại bạn ở những sự kiện tiếp theo của GDG-HUST nhé!`;

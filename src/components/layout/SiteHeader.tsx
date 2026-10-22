@@ -45,16 +45,6 @@ export function SiteHeader() {
         >
           Cây ước nguyện
         </Link>
-        <Link
-          to="/thanks"
-          className={`px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full transition-all no-underline whitespace-nowrap ${
-            currentPath === "/thanks"
-              ? "bg-[#F7E6EC] text-[var(--accent-blush-hover)] font-semibold"
-              : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/50"
-          }`}
-        >
-          Lời cảm ơn
-        </Link>
         {girl && (
         <Link
           to="/play"
