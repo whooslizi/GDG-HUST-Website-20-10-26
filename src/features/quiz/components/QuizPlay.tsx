@@ -40,6 +40,7 @@ export function QuizPlay({
   const [boyTeam, setBoyTeam] = useState("");
   const [showAnswers, setShowAnswers] = useState(false);
   const [opening, setOpening] = useState(false);
+  const [letterDone, setLetterDone] = useState(false);
   const [shakeKey, setShakeKey] = useState(0);
   const reduceMotion = useReducedMotion();
   const [now, setNow] = useState(() => Date.now());
@@ -157,6 +158,7 @@ export function QuizPlay({
     setInputCode("");
     setFeedback("idle");
     setPickedKey(null);
+    setLetterDone(false);
   }
 
   if (loading) {
@@ -317,7 +319,8 @@ export function QuizPlay({
     );
   }
 
-  if (!isOpen && !girl.is_checker) {
+  // The letter always comes first; once the game is open it ends with a play button.
+  if (!girl.is_checker && (!isOpen || !letterDone)) {
     return (
       <LetterSheet
         to={girl.name}
@@ -336,12 +339,24 @@ Tinh mắt như bạn thì chắc chắn thử thách tối thứ Năm sẽ ch�
 Trang thư này là bí mật nho nhỏ giữa bạn và chúng mình thôi, đừng kể cho ai nghe nha!`}
         footer={
           <div role="status" className="text-center border-t border-dashed border-[#D9C7B0] pt-6">
-            <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#B4475A]">
-              Trò chơi mở lúc 18:00 ngày 22/10/2026
-            </p>
-            <p className="mt-1 text-2xl font-mono font-bold text-[#B4475A] tabular-nums">
-              {formatCountdown(OPEN_AT - now)}
-            </p>
+            {isOpen ? (
+              <button
+                type="button"
+                onClick={() => setLetterDone(true)}
+                className="w-full h-11 rounded-xl bg-[#D94B76] hover:bg-[#C23D66] text-white font-bold text-sm cursor-pointer"
+              >
+                Bắt đầu chơi →
+              </button>
+            ) : (
+              <>
+                <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#B4475A]">
+                  Trò chơi mở lúc 18:00 ngày 22/10/2026
+                </p>
+                <p className="mt-1 text-2xl font-mono font-bold text-[#B4475A] tabular-nums">
+                  {formatCountdown(OPEN_AT - now)}
+                </p>
+              </>
+            )}
             <p className="mt-4 text-xs text-[#826A73] leading-relaxed">
               Các bạn nam GDG cũng gửi các lời chúc đến cậu, hãy ấn vào{" "}
               <Link
