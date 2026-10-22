@@ -63,8 +63,8 @@ interface LetterSheetProps {
   children: ReactNode;
   signature?: string;
   footer?: ReactNode;
-  // Hidden second page (easter egg): opened by the folded corner or by tapping the sheet behind.
-  pageTwo?: ReactNode;
+  // Hidden extra pages (easter egg): opened by the folded corner or by tapping the sheet behind.
+  pages?: ReactNode[];
 }
 
 const PAPER_STYLE = {
@@ -81,7 +81,7 @@ export function LetterSheet({
   children,
   signature = "GDG HUST",
   footer,
-  pageTwo,
+  pages = [],
 }: LetterSheetProps) {
   const reduceMotion = useReducedMotion();
   const [page, setPage] = useState(1);
@@ -91,18 +91,21 @@ export function LetterSheet({
   };
   const name = to.trim() || "bạn";
 
+  const total = pages.length + 1;
   const sheet = (n: number, content: ReactNode) => {
     const front = page === n;
+    // How far behind the front sheet this one sits (1 = right behind it).
+    const depth = (n - page + total) % total;
     return (
       <motion.article
         key={n}
         inert={!front}
         onClick={front ? undefined : () => turnTo(n)}
         initial={false}
-        animate={front ? { rotate: 0, x: 0, y: 0 } : { rotate: 3.5, x: 14, y: 10 }}
+        animate={front ? { rotate: 0, x: 0, y: 0 } : { rotate: 3.5 * depth, x: 14 * depth, y: 10 * depth }}
         transition={{ duration: reduceMotion ? 0 : 0.45, ease: [0.4, 0, 0.2, 1] }}
         className={`relative rounded-[3px] px-6 sm:px-11 pt-11 pb-12 ${front ? "shadow-2xl" : "shadow-lg cursor-pointer"}`}
-        style={{ ...PAPER_STYLE, gridArea: "1 / 1", zIndex: front ? 2 : 1, background: front ? PAPER : "#F3ECDD" }}
+        style={{ ...PAPER_STYLE, gridArea: "1 / 1", zIndex: total - depth, background: front ? PAPER : "#F3ECDD" }}
       >
         {front && (
           <div aria-hidden className="absolute -top-3 left-1/2 -translate-x-1/2 w-28 h-7 rotate-[-3deg] opacity-80" style={{ background: "repeating-linear-gradient(45deg, #F3C5CF 0 8px, #F8DCE2 8px 16px)" }} />
@@ -112,9 +115,9 @@ export function LetterSheet({
         {front && (
           <button
             type="button"
-            onClick={() => turnTo(n === 1 ? 2 : 1)}
-            aria-label={n === 1 ? "Lật sang trang 2" : "Quay lại trang 1"}
-            title={n === 1 ? "Lật trang" : "Trang trước"}
+            onClick={() => turnTo((n % total) + 1)}
+            aria-label={n < total ? `Lật sang trang ${n + 1}` : "Quay lại trang 1"}
+            title={n < total ? "Lật trang" : "Trang đầu"}
             className="group absolute bottom-0 right-0 size-12 cursor-pointer"
           >
             <span className="absolute inset-0 bg-[#E9DCC6] shadow-[-2px_-2px_4px_rgba(0,0,0,0.08)] [clip-path:polygon(100%_0,0_100%,0_0)] transition-transform group-hover:scale-110 origin-top-left" />
@@ -146,15 +149,17 @@ export function LetterSheet({
         transition={{ type: "spring", damping: 20, stiffness: 140 }}
         className="relative w-full max-w-[560px] h-fit grid"
       >
-        {pageTwo ? (
+        {pages.length ? (
           <>
             {sheet(1, pageOne)}
-            {sheet(
-              2,
-              <div className="relative font-hand text-[17px] sm:text-[18px] leading-[1.6] whitespace-pre-line">
-                {pageTwo}
-                <p className="mt-6 font-script text-[26px] leading-tight text-[#B4475A]">{signature}</p>
-              </div>
+            {pages.map((p, i) =>
+              sheet(
+                i + 2,
+                <div className="relative font-hand text-[17px] sm:text-[18px] leading-[1.6] whitespace-pre-line">
+                  {p}
+                  <p className="mt-6 font-script text-[26px] leading-tight text-[#B4475A]">{signature}</p>
+                </div>
+              )
             )}
           </>
         ) : (
